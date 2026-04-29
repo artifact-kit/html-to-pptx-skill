@@ -49,17 +49,22 @@ const svgBox = (svg, box) => pptBox({
 | `<path>` with `M/L/H/V/C/Q/Z` | `<CustomGeometry>` with local `points` |
 | Complex filters, gradients, unsupported paths | Prefer semantic simplification; use image fallback only when editability is impossible |
 
-For `CustomGeometry`, compute the path bounding box in SVG coordinates, map that bbox to slide `x/y/w/h`, then subtract the bbox origin from every path point so `points` are local:
+For `CustomGeometry`, compute the path bounding box in SVG coordinates, map that bbox to slide `x/y/w/h`, then subtract the bbox origin from every path point and convert those local deltas to PPT local inches. Do not pass raw SVG coordinates as `points`; PptxGenJS treats numeric point coordinates as PPT units and will convert them to EMUs.
 
 ```tsx
+const localPt = (svg, x, y) => ({
+  x: inch(x * (svg.abs.w / svg.viewBox.w)),
+  y: inch(y * (svg.abs.h / svg.viewBox.h)),
+});
+
 <CustomGeometry
   {...svgBox(svg, pathBBox)}
   points={[
-    { x: 0, y: 0, moveTo: true },
-    { x: 40, y: 0 },
-    { x: 56, y: 18 },
-    { x: 40, y: 36 },
-    { x: 0, y: 36 },
+    { ...localPt(svg, 0, 0), moveTo: true },
+    localPt(svg, 40, 0),
+    localPt(svg, 56, 18),
+    localPt(svg, 40, 36),
+    localPt(svg, 0, 36),
     { close: true },
   ]}
   fill={{ color: "08265F" }}

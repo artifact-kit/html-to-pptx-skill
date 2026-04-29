@@ -53,7 +53,7 @@ Extends: `ShapeProps`.
 
 | Prop | Type | Comment |
 | :-- | :-- | :-- |
-| `points` | `CustomGeometryPoint[]` | Required custom geometry path points passed to PptxGenJS `custGeom`. Coordinates are local to the custom geometry box. |
+| `points` | `CustomGeometryPoint[]` | Required custom geometry path points passed to PptxGenJS `custGeom`. Coordinates are local PPT units inside the custom geometry box, not raw SVG units. |
 
 ```ts
 type CustomGeometryPoint =
@@ -67,8 +67,8 @@ type CustomGeometryPoint =
 SVG conversion rule:
 
 1. Compute the source SVG element's absolute pixel box from DOM/CSS/source attributes.
-2. Convert the box to PPT inches with formulas: `x = inch(svgLeftPx + pathBBox.x)`, `y = inch(svgTopPx + pathBBox.y)`, `w = inch(pathBBox.width)`, `h = inch(pathBBox.height)`.
-3. Convert path coordinates into the custom geometry's local coordinate space by subtracting the path bounding box origin. For example SVG `M 140 40 L 180 60` with `pathBBox.x = 120`, `pathBBox.y = 30` becomes `[{ x: 20, y: 10, moveTo: true }, { x: 60, y: 30 }]`.
+2. Convert the path bounding box to slide PPT inches with formulas: `x = inch(svgLeftPx + pathBBox.x * svgScaleX)`, `y = inch(svgTopPx + pathBBox.y * svgScaleY)`, `w = inch(pathBBox.width * svgScaleX)`, `h = inch(pathBBox.height * svgScaleY)`.
+3. Convert path coordinates into local PPT inches by subtracting the path bbox origin, applying the SVG render scale, then applying `inch(...)`. For example SVG `M 140 40 L 180 60` with `pathBBox.x = 120`, `pathBBox.y = 30`, `svgScaleX = 0.5`, and `svgScaleY = 0.5` becomes `[{ x: inch(20 * 0.5), y: inch(10 * 0.5), moveTo: true }, { x: inch(60 * 0.5), y: inch(30 * 0.5) }]`.
 4. Map SVG commands: `M` -> `moveTo`, `L/H/V` -> line points, `C` -> cubic curve, `Q` -> quadratic curve, `Z` -> `{ close: true }`. Use native `Line`, `Rect`, `Ellipse`, and arrow shapes for simpler primitives.
 
 ## Shape Type Alias

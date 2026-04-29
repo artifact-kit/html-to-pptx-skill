@@ -301,6 +301,14 @@
         return svg.h / svg.viewBox.h;
       }
 
+      function svgLocalX(svg, value) {
+        return inch(value * svgScaleX(svg));
+      }
+
+      function svgLocalY(svg, value) {
+        return inch(value * svgScaleY(svg));
+      }
+
       function svgAbs(svg, point) {
         return {
           x: svg.x + (point.x - svg.viewBox.x) * svgScaleX(svg),
@@ -369,9 +377,9 @@
         const markerPathFromSvgDefs = {
           box: { x: tip.x - 10, y: tip.y - 5, w: 10, h: 10 },
           points: [
-            { x: 0, y: 0, moveTo: true },
-            { x: 10, y: 5 },
-            { x: 0, y: 10 },
+            { x: svgLocalX(svg, 0), y: svgLocalY(svg, 0), moveTo: true },
+            { x: svgLocalX(svg, 10), y: svgLocalY(svg, 5) },
+            { x: svgLocalX(svg, 0), y: svgLocalY(svg, 10) },
             { close: true },
           ],
         };
@@ -525,12 +533,12 @@
             <Rect {...pptBox({ x: 0, y: 0, w: slidePx.w, h: slidePx.h })} fill={{ color: C.paper }} line={{ color: C.paper, transparency: 100 }} />
             <Rect {...pptBox({ x: 0, y: 0, w: slidePx.w, h: 12 })} fill={{ color: C.navy }} line={{ color: C.navy, transparency: 100 }} />
             <TextBox box={{ x: 40, y: 48, w: 560, h: 18 }} fontSize={9.4} bold color={C.cobalt}>TRANSFORMER ARCHITECTURE LECTURE</TextBox>
-            <TextBox box={{ x: 40, y: 72, w: 850, h: 58 }} fontSize={37.5} bold color={C.navy}>Attention 机制：结构与计算图</TextBox>
-            <TextBox box={{ x: 40, y: 132, w: 760, h: 28 }} fontSize={18} italic color="475569">Scaled dot-product attention as differentiable content-addressed retrieval</TextBox>
-            <Line x={inch(40)} y={inch(154)} w={inch(1520)} h={0} line={{ color: C.navy, width: 2 }} />
+            <TextBox box={{ x: 40, y: 66, w: 850, h: 78 }} fontSize={34} bold color={C.navy}>Attention 机制：结构与计算图</TextBox>
+            <TextBox box={{ x: 40, y: 138, w: 760, h: 38 }} fontSize={15.8} italic color="475569">Scaled dot-product attention as differentiable content-addressed retrieval</TextBox>
+            <Line x={inch(40)} y={inch(176)} w={inch(1520)} h={0} line={{ color: C.navy, width: 2 }} />
             <Line x={inch(1190)} y={inch(42)} w={0} h={inch(94)} line={{ color: "CBD5E1", width: 0.8 }} />
             <TextBox box={{ x: 1210, y: 48, w: 240, h: 22 }} fontSize={12.75} bold color={C.navy}>Learning Targets</TextBox>
-            <TextBox box={{ x: 1210, y: 78, w: 310, h: 58 }} fontSize={10.5} color="475569" breakLine={false}>
+            <TextBox box={{ x: 1210, y: 78, w: 310, h: 82 }} fontSize={9.2} color="475569" breakLine={false}>
               <TextRun text="• 把 query-key 匹配理解为 token-token 相似度矩阵" options={{ breakLine: true }} />
               <TextRun text="• 解释缩放、mask 与 softmax 的作用" options={{ breakLine: true }} />
               <TextRun text="• 说明 multi-head 如何并行学习不同关系子空间" />
