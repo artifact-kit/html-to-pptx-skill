@@ -1,6 +1,8 @@
-# HTML to PPTX JSX Skill
+# HTML to PPTX Skill
 
 Teach an agent to turn HTML pages into downloadable, editable PowerPoint decks with [`@artifact-kit/pptxgenjs-jsx`](https://github.com/artifact-kit/pptxgenjs-jsx).
+
+Repository: [`artifact-kit/html-to-pptx-skill`](https://github.com/artifact-kit/html-to-pptx-skill)
 
 This skill is measure-first: keep the source HTML clean, copy it into an exporter page, add DOM measurement markers to the exporter, and generate native PPTX objects from measured boxes plus SVG source geometry.
 
@@ -15,13 +17,31 @@ This skill is measure-first: keep the source HTML clean, copy it into an exporte
 
 ## Install As A Skill
 
-Clone this repository into your agent's skill directory:
+For Codex-style agents, clone this repository into the skills directory. Use the folder name `html-to-pptx-jsx` so the installed skill name stays stable:
 
 ```bash
-git clone https://github.com/artifact-kit/html-to-pptx-jsx.git ~/.codex/skills/html-to-pptx-jsx
+mkdir -p ~/.codex/skills
+git clone https://github.com/artifact-kit/html-to-pptx-skill.git ~/.codex/skills/html-to-pptx-jsx
 ```
 
-For other agent runtimes, install the folder wherever that runtime loads `SKILL.md`-based skills.
+For other LLM/agent runtimes, install this repository as a folder that contains `SKILL.md`, then configure the runtime to load that folder as a skill/tool instruction source.
+
+Agent installation instruction:
+
+```text
+Install the HTML to PPTX skill from https://github.com/artifact-kit/html-to-pptx-skill.
+Clone it into your skill directory, then load SKILL.md when the user asks to convert HTML,
+dashboards, reports, slide-like pages, or SVG-heavy pages into editable PowerPoint decks.
+After loading the skill, follow its measure-first workflow and referenced docs before writing
+the exporter HTML.
+```
+
+To update an existing install:
+
+```bash
+cd ~/.codex/skills/html-to-pptx-jsx
+git pull
+```
 
 ## Runtime Pattern
 
@@ -59,7 +79,7 @@ This repo includes a concrete measure-first demo:
 Run it locally:
 
 ```bash
-cd html-to-pptx-jsx
+cd html-to-pptx-skill
 python3 -m http.server 4178
 ```
 
