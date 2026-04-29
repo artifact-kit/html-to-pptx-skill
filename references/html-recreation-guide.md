@@ -43,7 +43,7 @@ const svgBox = (svg, box) => pptBox({
 | :-- | :-- |
 | `<rect>` with `rx` | `<RoundRect>` using mapped `x/y/w/h` |
 | `<rect>` without `rx` | `<Rect>` |
-| `<line>` or `path d="M x y L x y"` | `<Line>` with mapped endpoints |
+| `<line>` or `path d="M x y L x y"` | `<LineBetween>` with mapped endpoints |
 | `<text>` | `<Text>` at mapped anchor box; use source font size scaled by the SVG render scale |
 | `<circle>` / `<ellipse>` | `<Ellipse>` |
 | `<path>` with `M/L/H/V/C/Q/Z` | `<CustomGeometry>` with local `points` |
@@ -74,6 +74,20 @@ const localPt = (svg, x, y) => ({
 
 This corresponds to an SVG path like `M 120 40 L 160 40 L 176 58 L 160 76 L 120 76 Z` with `pathBBox = { x: 120, y: 40, w: 56, h: 36 }`.
 
+Use `LineBetween`, not raw `Line`, for SVG endpoint arrows:
+
+```tsx
+<LineBetween
+  x1={inch(mapSvgX(svg, 135))}
+  y1={inch(mapSvgY(svg, 142))}
+  x2={inch(mapSvgX(svg, 170))}
+  y2={inch(mapSvgY(svg, 80))}
+  line={{ color: "08265F", width: 1.2, endArrowType: "triangle" }}
+/>
+```
+
+Raw `Line` uses PowerPoint's shape-box model (`x/y/w/h` plus optional `flipH/flipV`), not SVG's point-to-point model. Passing `w = x2 - x1` and `h = y2 - y1` directly works for many left-to-right horizontal lines, but diagonal or upward vertical arrows can reverse or render with invalid negative extents.
+
 ## Mapping HTML to PPTX JSX
 
 | HTML/UI pattern | PPTX JSX mapping |
@@ -82,7 +96,7 @@ This corresponds to an SVG path like `M 120 40 L 160 40 L 176 58 L 160 76 L 120 
 | Heading or label | `<Text>` |
 | Inline rich text | `<Text>` with `<TextRun>` children |
 | Card, pill, panel, badge | Shape component such as `<Rect>` or `<RoundRect>` |
-| Divider or rule | `<Line>` |
+| Divider or rule | `<Line>` for simple rules, `<LineBetween>` when preserving endpoint direction |
 | SVG rect/ellipse/line/text | Matching native PPT shape/text component with viewBox mapping |
 | SVG path | `<CustomGeometry>` when editable path geometry matters |
 | Image or screenshot asset | `<Image>` with explicit sizing |

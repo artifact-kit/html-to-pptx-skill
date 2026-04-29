@@ -33,6 +33,7 @@
 | `RoundRect` | `slide.addShape('roundRect')` | Rounded rectangle; supports rectRadius. | `RoundRectProps` |
 | `Ellipse` | `slide.addShape('ellipse')` | Ellipse or oval. | `EllipseProps` |
 | `Line` | `slide.addShape('line')` | Line or arrow line. | `LineProps` |
+| `LineBetween` | `slide.addShape('line') with normalized x/y/w/h and flipH/flipV` | Line or arrow from endpoint A to endpoint B; best for SVG line/path endpoints and diagonal or vertical arrows. | `LineBetweenProps` |
 | `Arc` | `slide.addShape('arc')` | Arc shape; supports angleRange. | `ArcProps` |
 | `BlockArc` | `slide.addShape('blockArc')` | Thick arc; supports angleRange and arcThicknessRatio. | `BlockArcProps` |
 | `PieShape` | `slide.addShape('pie')` | Pie-slice shape; not a data chart. | `PieShapeProps` |

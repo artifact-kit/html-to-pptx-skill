@@ -8,6 +8,7 @@ Use dedicated shape components when available. Use `<Shape shape="VALUE" ... />`
 - `RoundRect`
 - `Ellipse` / `Oval`
 - `Line`
+- `LineBetween`
 - `Arc`
 - `BlockArc`
 - `PieShape`
@@ -69,7 +70,20 @@ SVG conversion rule:
 1. Compute the source SVG element's absolute pixel box from DOM/CSS/source attributes.
 2. Convert the path bounding box to slide PPT inches with formulas: `x = inch(svgLeftPx + pathBBox.x * svgScaleX)`, `y = inch(svgTopPx + pathBBox.y * svgScaleY)`, `w = inch(pathBBox.width * svgScaleX)`, `h = inch(pathBBox.height * svgScaleY)`.
 3. Convert path coordinates into local PPT inches by subtracting the path bbox origin, applying the SVG render scale, then applying `inch(...)`. For example SVG `M 140 40 L 180 60` with `pathBBox.x = 120`, `pathBBox.y = 30`, `svgScaleX = 0.5`, and `svgScaleY = 0.5` becomes `[{ x: inch(20 * 0.5), y: inch(10 * 0.5), moveTo: true }, { x: inch(60 * 0.5), y: inch(30 * 0.5) }]`.
-4. Map SVG commands: `M` -> `moveTo`, `L/H/V` -> line points, `C` -> cubic curve, `Q` -> quadratic curve, `Z` -> `{ close: true }`. Use native `Line`, `Rect`, `Ellipse`, and arrow shapes for simpler primitives.
+4. Map SVG commands: `M` -> `moveTo`, `L/H/V` -> line points, `C` -> cubic curve, `Q` -> quadratic curve, `Z` -> `{ close: true }`. Use native `LineBetween`, `Rect`, `Ellipse`, and arrow shapes for simpler primitives.
+
+### `LineBetweenProps`
+
+Extends: `LineProps` but replaces `x/y/w/h` with endpoints.
+
+| Prop | Type | Comment |
+| :-- | :-- | :-- |
+| `x1` | `number` | Start x coordinate in PPT inches. |
+| `y1` | `number` | Start y coordinate in PPT inches. |
+| `x2` | `number` | End x coordinate in PPT inches. |
+| `y2` | `number` | End y coordinate in PPT inches. |
+
+Use `LineBetween` for SVG line/path endpoint conversion. It computes positive `x/y/w/h` plus `flipH/flipV` internally, so diagonal and vertical arrows keep the same direction as the source. Raw `Line` expects PowerPoint's shape box model; passing `w = x2 - x1` and `h = y2 - y1` can reverse arrows or create invalid negative extents.
 
 ## Shape Type Alias
 

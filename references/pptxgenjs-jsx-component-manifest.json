@@ -101,6 +101,16 @@
       "propsInterface": "LineProps"
     },
     {
+      "name": "LineBetween",
+      "category": "shape",
+      "mapsTo": "slide.addShape('line') with normalized x/y/w/h and flipH/flipV",
+      "useWhen": "Line or arrow from endpoint A to endpoint B; best for SVG line/path endpoints and diagonal or vertical arrows.",
+      "propsInterface": "LineBetweenProps",
+      "notes": [
+        "Use instead of Line when you know start/end coordinates. It preserves arrow direction for negative slopes and vertical upward lines."
+      ]
+    },
+    {
       "name": "Arc",
       "category": "shape",
       "mapsTo": "slide.addShape('arc')",

@@ -234,6 +234,7 @@
       } = window.ArtifactKitPptxGenJsx;
 
       const CustomGeometryComponent = window.ArtifactKitPptxGenJsx.CustomGeometry;
+      const LineBetweenComponent = window.ArtifactKitPptxGenJsx.LineBetween;
 
       const C = {
         ink: "0F172A",
@@ -293,6 +294,22 @@
         return pptxElement(Shape, { ...props, shape: "custGeom" });
       }
 
+      function EndpointLine(props) {
+        if (LineBetweenComponent) return pptxElement(LineBetweenComponent, props);
+        const { x1, y1, x2, y2, ...rest } = props;
+        return (
+          <Line
+            {...rest}
+            x={Math.min(x1, x2)}
+            y={Math.min(y1, y2)}
+            w={Math.abs(x2 - x1)}
+            h={Math.abs(y2 - y1)}
+            flipH={x2 < x1}
+            flipV={y2 < y1}
+          />
+        );
+      }
+
       function svgScaleX(svg) {
         return svg.w / svg.viewBox.w;
       }
@@ -342,11 +359,11 @@
         const start = svgAbs(svg, from);
         const end = svgAbs(svg, to);
         return (
-          <Line
-            x={inch(start.x)}
-            y={inch(start.y)}
-            w={inch(end.x - start.x)}
-            h={inch(end.y - start.y)}
+          <EndpointLine
+            x1={inch(start.x)}
+            y1={inch(start.y)}
+            x2={inch(end.x)}
+            y2={inch(end.y)}
             line={{ color, width, beginArrowType: "none", endArrowType: arrow ? "triangle" : "none" }}
           />
         );
