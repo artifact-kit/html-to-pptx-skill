@@ -71,6 +71,22 @@ http://127.0.0.1:4178/examples/generated/attention-pptx-export.html
 
 Click **Export PPTX**. The exporter measures its own DOM, recreates the slide with native PowerPoint objects, validates the deck, and downloads a `.pptx`.
 
+## Proven Output
+
+The attention example is included as a concrete proof of the workflow:
+
+1. Start from a clean HTML slide. The source page remains a normal browser document, without measure attributes baked into the input.
+
+![Source HTML slide](assets/proof/01-source-html.png)
+
+2. Export to a `.pptx` that visually tracks the HTML layout using measured DOM boxes, SVG primitive mapping, native chart data, and native PowerPoint shapes.
+
+![Generated PPTX preview](assets/proof/02-generated-pptx-preview.png)
+
+3. Open the generated deck and select the content. Text, cards, grid cells, lines, arrows, charts, and diagram parts are editable PowerPoint objects instead of one flattened screenshot.
+
+![Editable native PowerPoint objects](assets/proof/03-editable-native-objects.png)
+
 ## Agent Workflow
 
 1. Read `SKILL.md`.
