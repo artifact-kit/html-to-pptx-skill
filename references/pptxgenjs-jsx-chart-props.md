@@ -10,6 +10,8 @@ Generated from `pptxgenjs/types/index.d.ts`.
 type CHART_NAME = 'area'|'bar'|'bar3D'|'bubble'|'doughnut'|'line'|'pie'|'radar'|'scatter'
 ```
 
+Only these chart types are valid. Do not use `type="heatmap"` or other guessed chart names. Rebuild heatmaps and attention matrices with editable `Rect` grids or `Table` cells.
+
 ### `ChartAxisTickMark`
 
 ```ts

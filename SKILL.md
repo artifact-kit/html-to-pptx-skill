@@ -15,7 +15,8 @@ Do not jump directly from input HTML to a finished exporter. Before writing the 
 2. **Slide decomposition**: component tree from large to small, such as `Deck -> Slide -> Header -> MainGrid -> Panel -> Diagram`.
 3. **Measurement manifest**: every required `data-ak-measure` id, the DOM selector it marks, and why the PPT needs its box.
 4. **SVG inventory**: every source `<svg>`, its `viewBox`, important primitives (`rect`, `line`, `path`, `circle`, `text`, chart marks), and a mapping decision for each group.
-5. **Fallback list**: any raster/image fallback with a specific reason. Empty is preferred.
+5. **Component API plan**: every wrapper component and non-obvious prop you will use, with the reference doc or manifest entry that proves it exists.
+6. **Fallback list**: any raster/image fallback with a specific reason. Empty is preferred.
 
 If any SVG has readable primitives, do not embed that SVG as a PNG. Map its primitives into editable PPT shapes unless the fallback list documents why native reconstruction is impossible.
 
@@ -40,6 +41,9 @@ Start from [assets/browser-inline-jsx-template.html](assets/browser-inline-jsx-t
 - If an element is inside SVG, map it from the SVG source `viewBox` and primitive coordinates.
 - If neither DOM measurement nor source geometry is available, explicitly choose an image/snapdom fallback and document why editability is not practical.
 - Do not rasterize SVGs just because native mapping takes more work.
+- Do not invent wrapper APIs. Check component names, chart types, and props against the manifest/docs before using them.
+- Do not use `<Chart type="heatmap">`; heatmaps/matrices should be editable `Rect` grids or `Table` cells unless raster fallback is documented.
+- Do not pass a measured box to `LineBetween`. It requires numeric `x1`, `y1`, `x2`, and `y2` endpoints in PPT inches.
 - Keep arithmetic visible in generated JS. Agents should be able to audit why every coordinate exists.
 - Split the generated JSX into named components. Avoid one monolithic slide function.
 - Prefer native editable PPT objects over screenshots. Use raster fallback only for details that cannot be represented editably.
@@ -55,6 +59,7 @@ Always read:
 3. [references/one-shot-agent-contract.md](references/one-shot-agent-contract.md)
 4. [references/pptxgenjs-jsx-llms.txt](references/pptxgenjs-jsx-llms.txt)
 5. [references/pptxgenjs-jsx-quickstart.md](references/pptxgenjs-jsx-quickstart.md)
+6. [references/native-reconstruction-patterns.md](references/native-reconstruction-patterns.md)
 
 Read when needed:
 

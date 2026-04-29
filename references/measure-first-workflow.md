@@ -21,6 +21,7 @@ Before writing the exporter, create a short plan with:
 - component tree from large regions down to repeated primitives;
 - measurement manifest of every `data-ak-measure` id;
 - SVG inventory with viewBox, primitive groups, and native mapping decisions.
+- component API plan that checks every planned component, chart type, and non-obvious prop against the wrapper docs.
 
 For one-shot agents, use [one-shot-agent-contract.md](one-shot-agent-contract.md) and keep the plan as a comment at the top of the exporter if there is no separate planning artifact.
 
@@ -94,6 +95,12 @@ Use the measured values directly:
 ```
 
 For SVG contents, measure the SVG element once, then map primitives from the SVG viewBox. See [svg-viewbox-mapping.md](svg-viewbox-mapping.md). Do not convert SVGs to images until you have inspected the SVG source and documented why primitive mapping is not practical.
+
+For complex pages, read [native-reconstruction-patterns.md](native-reconstruction-patterns.md) before coding. In particular:
+
+- heatmaps and matrices are editable `Rect` grids or `Table` cells, not `<Chart type="heatmap">`;
+- endpoint arrows use `LineBetween x1/y1/x2/y2`, not a spread measured box;
+- cards, badges, connectors, icons, and diagram nodes need shape components, not only `Text`.
 
 ## 6. Validate And Download
 

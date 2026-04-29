@@ -113,9 +113,10 @@ The attention example is included as a concrete proof of the workflow:
 2. Read `references/measure-first-workflow.md`.
 3. Read `references/coordinate-policy.md`.
 4. Read `references/one-shot-agent-contract.md` before generating an exporter in one pass.
-5. Create the required stage-gate artifacts: file plan, component tree, measurement manifest, SVG inventory, and raster fallback list.
-6. Load component docs only as needed.
-7. Before handoff, run through `references/audit-checklist.md`.
+5. Read `references/native-reconstruction-patterns.md` for complex pages with shapes, diagrams, matrices, or charts.
+6. Create the required stage-gate artifacts: file plan, component tree, measurement manifest, SVG inventory, component API plan, and raster fallback list.
+7. Load component docs only as needed.
+8. Before handoff, run through `references/audit-checklist.md`.
 
 ## Design Positioning
 

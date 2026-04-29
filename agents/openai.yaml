@@ -1,4 +1,4 @@
 interface:
   display_name: "HTML to PPTX"
   short_description: "Create editable PPTX files from measured HTML"
-  default_prompt: "Use $html-to-pptx-jsx to convert this HTML into an editable PPTX. First produce the file plan, component tree, measurement manifest, SVG inventory, and fallback list; then create a measured exporter and download the PPTX."
+  default_prompt: "Use $html-to-pptx-jsx to convert this HTML into an editable PPTX. First produce the file plan, component tree, measurement manifest, SVG inventory, component API plan, and fallback list; verify component/props docs before coding; then create a measured exporter and download the PPTX."

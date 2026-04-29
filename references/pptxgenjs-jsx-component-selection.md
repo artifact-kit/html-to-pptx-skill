@@ -69,6 +69,8 @@
 | `Chart` | `slide.addChart(type, data, options)` | Multi-chart or any raw chart type usage. | `ChartProps` |
 | `Raw` | `custom render callback` | Newest or unsupported PptxGenJS APIs. | `RawProps` |
 
+Do not use escape hatches to invent unsupported APIs. `Chart` still requires a valid PptxGenJS chart type. Valid chart types are `area`, `bar`, `bar3D`, `bubble`, `doughnut`, `line`, `pie`, `radar`, and `scatter`; `heatmap` is not valid. For heatmaps or attention matrices, use editable `Rect` grids or `Table` cells.
+
 ## Chart Components
 
 | Component | Maps to | Use when | Props interface |
@@ -82,6 +84,8 @@
 | `PieChart` | `slide.addChart('pie')` | Pie data chart. | `PieChartProps` |
 | `RadarChart` | `slide.addChart('radar')` | Radar chart. | `RadarChartProps` |
 | `ScatterChart` | `slide.addChart('scatter')` | Scatter chart. | `ScatterChartProps` |
+
+Prefer these dedicated chart components over generic `Chart` when the chart type is one of the listed components.
 
 ## Media Components
 

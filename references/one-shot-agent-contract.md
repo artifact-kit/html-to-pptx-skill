@@ -32,11 +32,20 @@ SVG_INVENTORY
 svg id | viewBox | primitives | mapping
 diagram-svg | 0 0 1040 390 | rect,line,path,text | map primitives to Rect/RoundRect/LineBetween/Text
 
+COMPONENT_API_PLAN
+component | purpose | docs checked
+RoundRect | cards and rounded nodes | component-selection, shape-props
+LineBetween | SVG endpoint arrows | component-selection, shape-props
+LineChart | recoverable line chart data | component-selection, chart-props
+Rect | heatmap cells and square tokens | component-selection, common-props
+
 RASTER_FALLBACKS
 none
 ```
 
 If `SVG_INVENTORY` says an SVG has primitives, the exporter must include mapping helpers and native PPT components for those primitives. It must not use `Image`, `snapdom`, canvas capture, or data URLs for that SVG.
+
+If `COMPONENT_API_PLAN` names a component, chart type, or prop that does not appear in the manifest/docs, change the plan before coding. Never invent wrapper API surface.
 
 ## Implementation Order
 
@@ -45,12 +54,14 @@ If `SVG_INVENTORY` says an SVG has primitives, the exporter must include mapping
 3. Create the component tree.
 4. Create the measurement manifest.
 5. Inspect every SVG source. Record viewBox and primitive groups.
-6. Copy the input into the exporter.
-7. Add measurement attributes from the manifest.
-8. Write componentized inline JSX using the manifest and SVG inventory.
-9. Validate, render, and visually compare the downloaded PPTX.
+6. Read component-selection and prop docs for the components you plan to use.
+7. Create the component API plan.
+8. Copy the input into the exporter.
+9. Add measurement attributes from the manifest.
+10. Write componentized inline JSX using the manifest, SVG inventory, and component API plan.
+11. Validate, render, and visually compare the downloaded PPTX.
 
-Do not combine steps 1-8 into a single unstructured code dump.
+Do not combine steps 1-10 into a single unstructured code dump.
 
 ## Componentization Rules
 
@@ -98,6 +109,8 @@ For each SVG, classify primitives before deciding output type:
 | polygonal `path` | `CustomGeometry` |
 | chart lines/bars/markers with recoverable data | native chart component |
 
+Heatmap and matrix visuals are not native PowerPoint chart types. Rebuild them with editable `Rect` cells or a `Table`; do not use `<Chart type="heatmap">`.
+
 Fallback to raster only when:
 
 - the SVG is a complex filter/texture/illustration whose editability is not useful,
@@ -118,3 +131,8 @@ Every coordinate in exporter JSX must come from exactly one of:
 
 If the coordinate came from "looks close", it is invalid.
 
+## Validation Error Hints
+
+- `line.endpoint.invalid`: some `LineBetween` is missing numeric `x1/y1/x2/y2`. You probably spread a measured box (`x/y/w/h`) into `LineBetween`; compute endpoints instead.
+- Chart errors around type/options: check `pptxgenjs-jsx-chart-props.md`. Valid chart types are only `area`, `bar`, `bar3D`, `bubble`, `doughnut`, `line`, `pie`, `radar`, and `scatter`.
+- Text-only output: return to the component tree and shape inventory. Cards, badges, icons, matrices, and arrows require native shapes, not just `Text`.
