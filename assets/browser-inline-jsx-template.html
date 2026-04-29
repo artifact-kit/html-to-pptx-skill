@@ -38,15 +38,7 @@
         padding: 16px;
       }
     </style>
-    <script type="importmap">
-      {
-        "imports": {
-          "@artifact-kit/pptxgenjs-jsx": "https://unpkg.com/@artifact-kit/pptxgenjs-jsx@0.1.0/dist/pptxgenjs-jsx.browser.es.js",
-          "@artifact-kit/pptxgenjs-jsx/jsx-runtime": "https://unpkg.com/@artifact-kit/pptxgenjs-jsx@0.1.0/dist/jsx-runtime.browser.es.js",
-          "@artifact-kit/pptxgenjs-jsx/jsx-dev-runtime": "https://unpkg.com/@artifact-kit/pptxgenjs-jsx@0.1.0/dist/jsx-runtime.browser.es.js"
-        }
-      }
-    </script>
+    <script src="https://unpkg.com/@artifact-kit/pptxgenjs-jsx@0.1.0/dist/pptxgenjs-jsx.browser.iife.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   </head>
   <body>
@@ -58,7 +50,7 @@
 
     <script type="text/babel" data-type="module" data-presets="typescript,react">
       /** @jsx h */
-      import {
+      const {
         Deck,
         RoundRect,
         Slide,
@@ -66,7 +58,7 @@
         h,
         renderPptx,
         validateDeck,
-      } from "@artifact-kit/pptxgenjs-jsx";
+      } = window.ArtifactKitPptxGenJsx;
 
       const status = document.querySelector("#status");
 

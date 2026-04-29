@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Attention Mechanism Structure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: "#0f172a",
+              navy: "#08265f",
+              cobalt: "#1d4ed8",
+              paper: "#f8fafc",
+              grid: "#d8e2f0",
+              amberSoft: "#fff2bf",
+              violetSoft: "#efe2ff",
+              greenSoft: "#e2f5d7",
+              roseSoft: "#ffe2df"
+            },
+            fontFamily: {
+              sans: ["Inter", "Arial", "Noto Sans SC", "sans-serif"],
+              serif: ["Georgia", "Times New Roman", "serif"]
+            },
+            boxShadow: {
+              slide: "0 26px 80px rgba(15, 23, 42, 0.22)"
+            }
+          }
+        }
+      };
+    </script>
+    <style type="text/tailwindcss">
+      @layer base {
+        html, body { @apply m-0 h-full overflow-auto bg-slate-200 text-ink font-sans; }
+      }
+      @layer components {
+        .slide-viewport { @apply relative mx-auto; }
+        .slide-canvas { @apply absolute left-0 top-0 h-[900px] w-[1600px] origin-top-left overflow-hidden bg-paper shadow-slide; }
+        .panel { @apply rounded-lg border border-slate-300/90 bg-white/85 shadow-sm; }
+        .tag { @apply inline-flex h-6 min-w-7 items-center justify-center rounded border border-blue-200 bg-blue-50 px-2 text-[12px] font-bold text-navy; }
+        .small-label { @apply text-[12px] leading-tight text-slate-600; }
+        .section-title { @apply flex items-center gap-2 text-[17px] font-extrabold text-navy; }
+        .explain-card { @apply rounded-md border border-blue-200 bg-blue-50/70 px-3 py-2 text-[13px] leading-snug text-slate-700; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="viewport" class="slide-viewport">
+      <main id="slide" class="slide-canvas">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(37,99,235,0.10),transparent_28%)]"></div>
+
+        <header class="relative mx-10 mt-7 grid grid-cols-[1fr_410px] gap-8 border-b-[3px] border-navy pb-4">
+          <div>
+            <p class="mb-1 text-[15px] font-extrabold uppercase text-cobalt">Transformer Architecture Lecture</p>
+            <h1 class="m-0 text-[50px] font-black leading-none tracking-normal text-navy">Attention 机制：结构与计算图</h1>
+            <p class="mt-3 text-[24px] italic leading-tight text-slate-700">Scaled dot-product attention as differentiable content-addressed retrieval</p>
+          </div>
+          <aside class="border-l border-slate-300 pl-6">
+            <h2 class="mb-2 text-[17px] font-extrabold text-navy">Learning Targets</h2>
+            <ul class="ml-4 list-disc space-y-1 text-[14px] leading-snug text-slate-700">
+              <li>把 query-key 匹配理解为 token-token 相似度矩阵</li>
+              <li>解释缩放、mask 与 softmax 的作用</li>
+              <li>说明 multi-head 如何并行学习不同关系子空间</li>
+            </ul>
+          </aside>
+        </header>
+
+        <section class="relative mx-10 mt-4 grid grid-cols-[1fr_380px] gap-4">
+          <section class="panel p-3">
+            <div class="section-title">
+              <span class="tag">1</span>
+              <span>Attention 计算结构：从嵌入到上下文向量</span>
+            </div>
+            <div class="mt-2 grid grid-cols-[1fr_310px] gap-4">
+              <svg class="h-[315px] w-full" viewBox="0 0 1040 390" role="img" aria-label="SVG computation graph for attention mechanism">
+                <defs>
+                  <marker id="arrow-main" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M0 0 L10 5 L0 10z" fill="#08265f" />
+                  </marker>
+                  <style>
+                    .s-head{fill:#08265f;font-size:16px;font-weight:800}
+                    .s-label{fill:#0f172a;font-size:14px;font-weight:700}
+                    .s-small{fill:#475569;font-size:11px}
+                    .s-flow{stroke:#08265f;stroke-width:1.8;fill:none;marker-end:url(#arrow-main)}
+                  </style>
+                </defs>
+
+                <text x="20" y="34" class="s-head">Linear projections</text>
+                <text x="20" y="58" class="s-small">input token states</text>
+                <g>
+                  <text x="55" y="87" text-anchor="middle" class="s-label">X</text>
+                  <rect x="28" y="96" width="54" height="90" rx="3" fill="#e8f4ff" stroke="#5b91c8" />
+                  <path d="M46 96v90M64 96v90M28 114h54M28 132h54M28 150h54M28 168h54" stroke="#5b91c8" stroke-width="0.8" />
+                  <text x="20" y="145" text-anchor="middle" class="s-small">n</text>
+                  <text x="55" y="205" text-anchor="middle" class="s-small">features</text>
+                </g>
+                <path class="s-flow" d="M82 142 L135 142" />
+                <path class="s-flow" d="M135 142 L170 80" />
+                <path class="s-flow" d="M135 142 L170 142" />
+                <path class="s-flow" d="M135 142 L170 204" />
+
+                <g>
+                  <rect x="174" y="54" width="120" height="48" rx="9" fill="#efe2ff" stroke="#8b5bb2" />
+                  <text x="234" y="75" text-anchor="middle" class="s-label">Query map</text>
+                  <text x="234" y="92" text-anchor="middle" class="s-small">query projection</text>
+                  <rect x="174" y="116" width="120" height="48" rx="9" fill="#fff2bf" stroke="#c89012" />
+                  <text x="234" y="137" text-anchor="middle" class="s-label">Key map</text>
+                  <text x="234" y="154" text-anchor="middle" class="s-small">key projection</text>
+                  <rect x="174" y="178" width="120" height="48" rx="9" fill="#e2f5d7" stroke="#609956" />
+                  <text x="234" y="199" text-anchor="middle" class="s-label">Value map</text>
+                  <text x="234" y="216" text-anchor="middle" class="s-small">value projection</text>
+                </g>
+                <path class="s-flow" d="M294 78 L330 78" />
+                <path class="s-flow" d="M294 140 L330 140" />
+                <path class="s-flow" d="M294 202 L330 202" />
+
+                <g>
+                  <text x="354" y="31" text-anchor="middle" class="s-label" fill="#6d28d9">Q</text>
+                  <rect x="330" y="40" width="48" height="80" fill="#efe2ff" stroke="#8b5bb2" />
+                  <path d="M346 40v80M362 40v80M330 56h48M330 72h48M330 88h48M330 104h48" stroke="#8b5bb2" stroke-width="0.8" />
+                  <text x="354" y="116" text-anchor="middle" class="s-small"></text>
+                </g>
+                <g>
+                  <text x="354" y="116" text-anchor="middle" class="s-label" fill="#a16207">K</text>
+                  <rect x="330" y="125" width="48" height="80" fill="#fff2bf" stroke="#c89012" />
+                  <path d="M346 125v80M362 125v80M330 141h48M330 157h48M330 173h48M330 189h48" stroke="#c89012" stroke-width="0.8" />
+                </g>
+                <g>
+                  <text x="354" y="201" text-anchor="middle" class="s-label" fill="#166534">V</text>
+                  <rect x="330" y="210" width="48" height="80" fill="#e2f5d7" stroke="#609956" />
+                  <path d="M346 210v80M362 210v80M330 226h48M330 242h48M330 258h48M330 274h48" stroke="#609956" stroke-width="0.8" />
+                </g>
+
+                <rect x="415" y="28" width="430" height="270" rx="18" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="8 8" />
+                <text x="435" y="58" class="s-head">Scaled dot-product attention</text>
+                <path class="s-flow" d="M378 80 L430 96" />
+                <path class="s-flow" d="M378 165 L430 104" />
+                <rect x="432" y="78" width="70" height="58" rx="9" fill="#efe2ff" stroke="#8b5bb2" />
+                <text x="467" y="102" text-anchor="middle" class="s-label">Similarity</text>
+                <text x="467" y="121" text-anchor="middle" class="s-small">token pairs</text>
+                <path class="s-flow" d="M502 107 L548 107" />
+                <rect x="552" y="78" width="70" height="58" rx="9" fill="#ffe2df" stroke="#d35c54" />
+                <text x="587" y="99" text-anchor="middle" class="s-label">Scale</text>
+                <text x="587" y="120" text-anchor="middle" class="s-small">stabilize</text>
+                <path class="s-flow" d="M622 107 L668 107" />
+                <rect x="672" y="70" width="76" height="74" rx="9" fill="#fff" stroke="#64748b" />
+                <text x="710" y="94" text-anchor="middle" class="s-label">Mask</text>
+                <rect x="692" y="101" width="12" height="12" fill="#1f2937" />
+                <rect x="704" y="101" width="12" height="12" fill="#fff7dd" stroke="#cbd5e1" stroke-width="0.5" />
+                <rect x="716" y="101" width="12" height="12" fill="#fff7dd" stroke="#cbd5e1" stroke-width="0.5" />
+                <rect x="692" y="113" width="12" height="12" fill="#fff7dd" stroke="#cbd5e1" stroke-width="0.5" />
+                <rect x="704" y="113" width="12" height="12" fill="#1f2937" />
+                <rect x="716" y="113" width="12" height="12" fill="#fff7dd" stroke="#cbd5e1" stroke-width="0.5" />
+                <rect x="692" y="125" width="12" height="12" fill="#fff7dd" stroke="#cbd5e1" stroke-width="0.5" />
+                <rect x="704" y="125" width="12" height="12" fill="#fff7dd" stroke="#cbd5e1" stroke-width="0.5" />
+                <rect x="716" y="125" width="12" height="12" fill="#1f2937" />
+                <text x="710" y="154" text-anchor="middle" class="s-small">hide invalid</text>
+                <path class="s-flow" d="M748 107 L795 107" />
+                <rect x="798" y="78" width="78" height="58" rx="9" fill="#fff2bf" stroke="#c89012" />
+                <text x="837" y="100" text-anchor="middle" class="s-label">Softmax</text>
+                <text x="837" y="120" text-anchor="middle" class="s-small">row weights</text>
+                <path class="s-flow" d="M876 107 L926 107" />
+                <rect x="930" y="78" width="72" height="58" rx="9" fill="#e2f5d7" stroke="#609956" />
+                <text x="966" y="102" text-anchor="middle" class="s-label">Weighted</text>
+                <text x="966" y="121" text-anchor="middle" class="s-small">values</text>
+                <path class="s-flow" d="M1002 107 L1024 107" />
+                <text x="1018" y="99" class="s-label">context</text>
+                <path class="s-flow" d="M378 250 L922 130" />
+                <rect x="475" y="196" width="300" height="54" rx="8" fill="#f8fbff" stroke="#93b2dc" />
+                <text x="625" y="218" text-anchor="middle" fill="#0f172a" font-size="16" font-weight="700">scores become a distribution over source tokens</text>
+                <text x="625" y="239" text-anchor="middle" fill="#475569" font-size="12">each output token gathers information from selected value vectors</text>
+
+                <text x="860" y="168" class="s-head">Encoder context</text>
+                <rect x="875" y="190" width="94" height="34" rx="7" fill="#eff6ff" stroke="#7ba3d7" />
+                <text x="922" y="212" text-anchor="middle" class="s-label">Add &amp; Norm</text>
+                <rect x="860" y="246" width="124" height="62" rx="8" fill="#eaf4ff" stroke="#4f83c7" />
+                <text x="922" y="273" text-anchor="middle" class="s-label">Position-wise</text>
+                <text x="922" y="292" text-anchor="middle" class="s-small">FFN + GELU</text>
+                <rect x="875" y="335" width="94" height="34" rx="7" fill="#eff6ff" stroke="#7ba3d7" />
+                <text x="922" y="357" text-anchor="middle" class="s-label">Add &amp; Norm</text>
+                <path class="s-flow" d="M938 335 L938 308" />
+                <path class="s-flow" d="M938 246 L938 224" />
+                <path class="s-flow" d="M938 190 L938 150" />
+              </svg>
+
+              <div class="space-y-3">
+                <div class="explain-card">
+                  <p class="mb-1 font-bold text-navy">三类投影</p>
+                  <p>Query 负责发起检索，Key 负责被匹配，Value 承载最终被汇聚的信息。</p>
+                </div>
+                <div class="explain-card">
+                  <p class="mb-1 font-bold text-navy">分布化选择</p>
+                  <p>相似度分数经过缩放、mask 和 softmax，变成每个 token 对其它 token 的注意力分布。</p>
+                </div>
+                <div class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] leading-snug text-slate-700">
+                  <b class="text-navy">解释：</b>每一行表示一个 query 如何从所有 value 中取信息；颜色更深代表信息汇聚权重更高。
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-2 grid grid-cols-[1.08fr_0.92fr] gap-4">
+              <div class="rounded-lg border border-slate-300 bg-white px-4 py-2">
+                <div class="section-title text-[15px]">
+                  <span class="tag">2</span>
+                  <span>Multi-Head Attention</span>
+                </div>
+                <svg class="mt-1 h-[118px] w-full" viewBox="0 0 610 150" role="img" aria-label="SVG multi-head attention graph">
+                  <defs>
+                    <marker id="arrow-mha" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                      <path d="M0 0 L10 5 L0 10z" fill="#08265f" />
+                    </marker>
+                    <style>.m-flow{stroke:#08265f;stroke-width:1.6;fill:none;marker-end:url(#arrow-mha)}.m-label{fill:#0f172a;font-size:13px;font-weight:700}.m-small{fill:#475569;font-size:10px}</style>
+                  </defs>
+                  <rect x="18" y="48" width="120" height="40" rx="8" fill="#e8f4ff" stroke="#5b91c8" />
+                  <text x="78" y="66" text-anchor="middle" class="m-label">X</text>
+                  <text x="78" y="82" text-anchor="middle" class="m-small">input states</text>
+                  <path class="m-flow" d="M138 68 L190 68" />
+                  <rect x="196" y="18" width="88" height="34" rx="7" fill="#efe2ff" stroke="#94a3b8" />
+                  <rect x="196" y="62" width="88" height="34" rx="7" fill="#fff2bf" stroke="#94a3b8" />
+                  <rect x="196" y="106" width="88" height="34" rx="7" fill="#e2f5d7" stroke="#94a3b8" />
+                  <text x="240" y="40" text-anchor="middle" class="m-label">projection set 1</text>
+                  <text x="240" y="84" text-anchor="middle" class="m-label">projection set 2</text>
+                  <text x="240" y="128" text-anchor="middle" class="m-label">projection set h</text>
+                  <path class="m-flow" d="M284 35 L342 35" />
+                  <path class="m-flow" d="M284 79 L342 79" />
+                  <path class="m-flow" d="M284 123 L342 123" />
+                  <rect x="345" y="18" width="112" height="34" rx="7" fill="#eff6ff" stroke="#7ba3d7" />
+                  <rect x="345" y="62" width="112" height="34" rx="7" fill="#eff6ff" stroke="#7ba3d7" />
+                  <rect x="345" y="106" width="112" height="34" rx="7" fill="#eff6ff" stroke="#7ba3d7" />
+                  <text x="401" y="40" text-anchor="middle" class="m-label">head 1</text>
+                  <text x="401" y="84" text-anchor="middle" class="m-label">head 2</text>
+                  <text x="401" y="128" text-anchor="middle" class="m-label">head h</text>
+                  <path class="m-flow" d="M457 35 L500 68" />
+                  <path class="m-flow" d="M457 79 L500 68" />
+                  <path class="m-flow" d="M457 123 L500 68" />
+                  <rect x="502" y="45" width="80" height="46" rx="8" fill="#ffe2df" stroke="#d35c54" />
+                  <text x="542" y="65" text-anchor="middle" class="m-label">Concat</text>
+                  <text x="542" y="82" text-anchor="middle" class="m-small">output mix</text>
+                </svg>
+                <div class="mt-1 text-[12px] leading-snug text-slate-700">多个 head 并行读取不同关系：局部邻近、长程依赖、句法角色或指代线索。</div>
+              </div>
+
+              <div class="rounded-lg border border-slate-300 bg-white px-4 py-2">
+                <div class="section-title text-[15px]">
+                  <span class="tag">3</span>
+                  <span>Mask 与归一化</span>
+                </div>
+                <div class="mt-2 grid grid-cols-2 gap-3">
+                  <svg class="h-[96px] w-full" viewBox="0 0 210 110" role="img" aria-label="Causal mask diagram">
+                    <g font-size="10" fill="#334155" text-anchor="middle">
+                      <rect x="42" y="12" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="50.5" y="24">0</text>
+                      <rect x="59" y="12" width="17" height="17" fill="#f8fafc" stroke="#94a3b8" /><text x="67.5" y="24">x</text>
+                      <rect x="76" y="12" width="17" height="17" fill="#f8fafc" stroke="#94a3b8" /><text x="84.5" y="24">x</text>
+                      <rect x="93" y="12" width="17" height="17" fill="#f8fafc" stroke="#94a3b8" /><text x="101.5" y="24">x</text>
+                      <rect x="110" y="12" width="17" height="17" fill="#f8fafc" stroke="#94a3b8" /><text x="118.5" y="24">x</text>
+                      <rect x="42" y="29" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="50.5" y="41">0</text>
+                      <rect x="59" y="29" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="67.5" y="41">0</text>
+                      <rect x="76" y="29" width="17" height="17" fill="#f8fafc" stroke="#94a3b8" /><text x="84.5" y="41">x</text>
+                      <rect x="93" y="29" width="17" height="17" fill="#f8fafc" stroke="#94a3b8" /><text x="101.5" y="41">x</text>
+                      <rect x="110" y="29" width="17" height="17" fill="#f8fafc" stroke="#94a3b8" /><text x="118.5" y="41">x</text>
+                      <rect x="42" y="46" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="50.5" y="58">0</text>
+                      <rect x="59" y="46" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="67.5" y="58">0</text>
+                      <rect x="76" y="46" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="84.5" y="58">0</text>
+                      <rect x="93" y="46" width="17" height="17" fill="#f8fafc" stroke="#94a3b8" /><text x="101.5" y="58">x</text>
+                      <rect x="110" y="46" width="17" height="17" fill="#f8fafc" stroke="#94a3b8" /><text x="118.5" y="58">x</text>
+                      <rect x="42" y="63" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="50.5" y="75">0</text>
+                      <rect x="59" y="63" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="67.5" y="75">0</text>
+                      <rect x="76" y="63" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="84.5" y="75">0</text>
+                      <rect x="93" y="63" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="101.5" y="75">0</text>
+                      <rect x="110" y="63" width="17" height="17" fill="#f8fafc" stroke="#94a3b8" /><text x="118.5" y="75">x</text>
+                      <rect x="42" y="80" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="50.5" y="92">0</text>
+                      <rect x="59" y="80" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="67.5" y="92">0</text>
+                      <rect x="76" y="80" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="84.5" y="92">0</text>
+                      <rect x="93" y="80" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="101.5" y="92">0</text>
+                      <rect x="110" y="80" width="17" height="17" fill="#e0f2fe" stroke="#94a3b8" /><text x="118.5" y="92">0</text>
+                    </g>
+                    <text x="106" y="108" text-anchor="middle" fill="#475569" font-size="11">causal mask</text>
+                  </svg>
+                  <div class="space-y-2 text-[13px] leading-snug text-slate-700">
+                    <p><b class="text-navy">Padding mask:</b> 屏蔽无效 token。</p>
+                    <p><b class="text-navy">Causal mask:</b> 自回归任务只允许访问过去位置。</p>
+                    <p>保留下三角区域，屏蔽当前位置之后的 token。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="grid grid-rows-[1fr_1fr] gap-4">
+            <section class="panel p-3">
+              <div class="section-title text-[15px]">
+                <span class="tag">4</span>
+                <span>Example Attention Matrix</span>
+              </div>
+              <svg class="mt-1 h-[190px] w-full" viewBox="0 0 360 218" role="img" aria-label="Attention matrix heatmap">
+                <text x="130" y="14" text-anchor="middle" fill="#1e293b" font-size="10" font-weight="700">key position j</text>
+                <text x="14" y="104" transform="rotate(-90 14 104)" text-anchor="middle" fill="#1e293b" font-size="10" font-weight="700">query i</text>
+                <g font-size="9" fill="#64748b" text-anchor="middle">
+                  <text x="67" y="24">T1</text><text x="85" y="24">T2</text><text x="103" y="24">T3</text><text x="121" y="24">T4</text><text x="139" y="24">T5</text><text x="157" y="24">T6</text><text x="175" y="24">T7</text><text x="193" y="24">T8</text>
+                  <text x="50" y="42" text-anchor="end">T1</text><text x="50" y="60" text-anchor="end">T2</text><text x="50" y="78" text-anchor="end">T3</text><text x="50" y="96" text-anchor="end">T4</text><text x="50" y="114" text-anchor="end">T5</text><text x="50" y="132" text-anchor="end">T6</text><text x="50" y="150" text-anchor="end">T7</text><text x="50" y="168" text-anchor="end">T8</text>
+                </g>
+                <g stroke="#fff" stroke-width="0.7">
+                  <rect x="58" y="30" width="18" height="18" fill="hsl(215 50% 44%)"/><rect x="76" y="30" width="18" height="18" fill="hsl(215 65% 84%)"/><rect x="94" y="30" width="18" height="18" fill="hsl(215 68% 92%)"/><rect x="112" y="30" width="18" height="18" fill="hsl(215 69% 94%)"/><rect x="130" y="30" width="18" height="18" fill="hsl(215 67% 89%)"/><rect x="148" y="30" width="18" height="18" fill="hsl(215 68% 92%)"/><rect x="166" y="30" width="18" height="18" fill="hsl(215 69% 94%)"/><rect x="184" y="30" width="18" height="18" fill="hsl(215 70% 95%)"/>
+                  <rect x="58" y="48" width="18" height="18" fill="hsl(215 66% 86%)"/><rect x="76" y="48" width="18" height="18" fill="hsl(215 51% 47%)"/><rect x="94" y="48" width="18" height="18" fill="hsl(215 64% 82%)"/><rect x="112" y="48" width="18" height="18" fill="hsl(215 69% 93%)"/><rect x="130" y="48" width="18" height="18" fill="hsl(215 68% 92%)"/><rect x="148" y="48" width="18" height="18" fill="hsl(215 67% 89%)"/><rect x="166" y="48" width="18" height="18" fill="hsl(215 69% 93%)"/><rect x="184" y="48" width="18" height="18" fill="hsl(215 70% 95%)"/>
+                  <rect x="58" y="66" width="18" height="18" fill="hsl(215 68% 92%)"/><rect x="76" y="66" width="18" height="18" fill="hsl(215 64% 80%)"/><rect x="94" y="66" width="18" height="18" fill="hsl(215 50% 46%)"/><rect x="112" y="66" width="18" height="18" fill="hsl(215 62% 76%)"/><rect x="130" y="66" width="18" height="18" fill="hsl(215 66% 87%)"/><rect x="148" y="66" width="18" height="18" fill="hsl(215 68% 90%)"/><rect x="166" y="66" width="18" height="18" fill="hsl(215 68% 90%)"/><rect x="184" y="66" width="18" height="18" fill="hsl(215 69% 94%)"/>
+                  <rect x="58" y="84" width="18" height="18" fill="hsl(215 69% 94%)"/><rect x="76" y="84" width="18" height="18" fill="hsl(215 68% 92%)"/><rect x="94" y="84" width="18" height="18" fill="hsl(215 61% 72%)"/><rect x="112" y="84" width="18" height="18" fill="hsl(215 49% 43%)"/><rect x="130" y="84" width="18" height="18" fill="hsl(215 63% 79%)"/><rect x="148" y="84" width="18" height="18" fill="hsl(215 66% 86%)"/><rect x="166" y="84" width="18" height="18" fill="hsl(215 67% 89%)"/><rect x="184" y="84" width="18" height="18" fill="hsl(215 69% 93%)"/>
+                  <rect x="58" y="102" width="18" height="18" fill="hsl(215 68% 90%)"/><rect x="76" y="102" width="18" height="18" fill="hsl(215 68% 92%)"/><rect x="94" y="102" width="18" height="18" fill="hsl(215 66% 86%)"/><rect x="112" y="102" width="18" height="18" fill="hsl(215 64% 81%)"/><rect x="130" y="102" width="18" height="18" fill="hsl(215 50% 45%)"/><rect x="148" y="102" width="18" height="18" fill="hsl(215 65% 84%)"/><rect x="166" y="102" width="18" height="18" fill="hsl(215 68% 90%)"/><rect x="184" y="102" width="18" height="18" fill="hsl(215 68% 92%)"/>
+                  <rect x="58" y="120" width="18" height="18" fill="hsl(215 69% 93%)"/><rect x="76" y="120" width="18" height="18" fill="hsl(215 68% 90%)"/><rect x="94" y="120" width="18" height="18" fill="hsl(215 67% 88%)"/><rect x="112" y="120" width="18" height="18" fill="hsl(215 66% 85%)"/><rect x="130" y="120" width="18" height="18" fill="hsl(215 64% 82%)"/><rect x="148" y="120" width="18" height="18" fill="hsl(215 51% 46%)"/><rect x="166" y="120" width="18" height="18" fill="hsl(215 63% 77%)"/><rect x="184" y="120" width="18" height="18" fill="hsl(215 67% 87%)"/>
+                  <rect x="58" y="138" width="18" height="18" fill="hsl(215 69% 94%)"/><rect x="76" y="138" width="18" height="18" fill="hsl(215 69% 93%)"/><rect x="94" y="138" width="18" height="18" fill="hsl(215 68% 92%)"/><rect x="112" y="138" width="18" height="18" fill="hsl(215 67% 89%)"/><rect x="130" y="138" width="18" height="18" fill="hsl(215 68% 90%)"/><rect x="148" y="138" width="18" height="18" fill="hsl(215 64% 80%)"/><rect x="166" y="138" width="18" height="18" fill="hsl(215 51% 49%)"/><rect x="184" y="138" width="18" height="18" fill="hsl(215 61% 75%)"/>
+                  <rect x="58" y="156" width="18" height="18" fill="hsl(215 70% 95%)"/><rect x="76" y="156" width="18" height="18" fill="hsl(215 69% 94%)"/><rect x="94" y="156" width="18" height="18" fill="hsl(215 69% 93%)"/><rect x="112" y="156" width="18" height="18" fill="hsl(215 68% 92%)"/><rect x="130" y="156" width="18" height="18" fill="hsl(215 68% 92%)"/><rect x="148" y="156" width="18" height="18" fill="hsl(215 66% 87%)"/><rect x="166" y="156" width="18" height="18" fill="hsl(215 62% 77%)"/><rect x="184" y="156" width="18" height="18" fill="hsl(215 50% 45%)"/>
+                </g>
+                <rect x="58" y="30" width="144" height="144" fill="none" stroke="#334155" />
+                <g>
+                  <rect x="224" y="36" width="10" height="20" fill="hsl(215 50% 44%)"/><rect x="224" y="56" width="10" height="20" fill="hsl(215 57% 60%)"/><rect x="224" y="76" width="10" height="20" fill="hsl(215 62% 74%)"/><rect x="224" y="96" width="10" height="20" fill="hsl(215 66% 85%)"/><rect x="224" y="116" width="10" height="20" fill="hsl(215 68% 91%)"/><rect x="224" y="136" width="10" height="20" fill="hsl(215 70% 96%)"/>
+                  <text x="240" y="42" fill="#64748b" font-size="9">1.0</text><text x="240" y="164" fill="#64748b" font-size="9">0.0</text>
+                </g>
+                <text x="130" y="192" text-anchor="middle" fill="#64748b" font-size="10">attention strength</text>
+              </svg>
+              <p class="mt-1 text-[12px] leading-snug text-slate-600">深色代表更强的连接；局部块状结构常对应短语、句法或共指关系。</p>
+            </section>
+
+            <section class="panel p-3">
+              <div class="section-title text-[15px]">
+                <span class="tag">5</span>
+                <span>Complexity Scaling</span>
+              </div>
+              <svg class="mt-1 h-[190px] w-full" viewBox="0 0 360 218" role="img" aria-label="Complexity chart for attention variants">
+                <g stroke="#e2e8f0">
+                  <line x1="46" y1="161" x2="338" y2="161"/><line x1="46" y1="132" x2="338" y2="132"/><line x1="46" y1="103" x2="338" y2="103"/><line x1="46" y1="74" x2="338" y2="74"/><line x1="46" y1="45" x2="338" y2="45"/><line x1="46" y1="16" x2="338" y2="16"/>
+                </g>
+                <g stroke="#eef2f7">
+                  <line x1="46" y1="16" x2="46" y2="176"/><line x1="127" y1="16" x2="127" y2="176"/><line x1="257" y1="16" x2="257" y2="176"/><line x1="338" y1="16" x2="338" y2="176"/>
+                </g>
+                <g fill="#64748b" font-size="9">
+                  <text x="38" y="164" text-anchor="end">10⁴</text><text x="38" y="135" text-anchor="end">10⁶</text><text x="38" y="106" text-anchor="end">10⁸</text><text x="38" y="77" text-anchor="end">10¹⁰</text><text x="38" y="48" text-anchor="end">10¹²</text><text x="38" y="19" text-anchor="end">10¹⁴</text>
+                  <text x="46" y="193" text-anchor="middle">16</text><text x="127" y="193" text-anchor="middle">256</text><text x="257" y="193" text-anchor="middle">4k</text><text x="338" y="193" text-anchor="middle">64k</text>
+                </g>
+                <line x1="46" y1="176" x2="338" y2="176" stroke="#334155" stroke-width="1.2"/>
+                <line x1="46" y1="16" x2="46" y2="176" stroke="#334155" stroke-width="1.2"/>
+                <path d="M46 143 L81 126 L127 103 L174 80 L220 57 L257 39 L338 22" fill="none" stroke="#2563eb" stroke-width="2"/>
+                <path d="M46 129 L81 121 L127 110 L174 100 L220 90 L257 82 L338 68" fill="none" stroke="#f97316" stroke-width="2"/>
+                <path d="M46 153 L81 141 L127 126 L174 110 L220 94 L257 82 L338 62" fill="none" stroke="#16a34a" stroke-width="2"/>
+                <g fill="#fff" stroke-width="1.7">
+                  <circle cx="46" cy="143" r="2.5" stroke="#2563eb"/><circle cx="81" cy="126" r="2.5" stroke="#2563eb"/><circle cx="127" cy="103" r="2.5" stroke="#2563eb"/><circle cx="174" cy="80" r="2.5" stroke="#2563eb"/><circle cx="220" cy="57" r="2.5" stroke="#2563eb"/><circle cx="257" cy="39" r="2.5" stroke="#2563eb"/><circle cx="338" cy="22" r="2.5" stroke="#2563eb"/>
+                  <circle cx="46" cy="129" r="2.5" stroke="#f97316"/><circle cx="81" cy="121" r="2.5" stroke="#f97316"/><circle cx="127" cy="110" r="2.5" stroke="#f97316"/><circle cx="174" cy="100" r="2.5" stroke="#f97316"/><circle cx="220" cy="90" r="2.5" stroke="#f97316"/><circle cx="257" cy="82" r="2.5" stroke="#f97316"/><circle cx="338" cy="68" r="2.5" stroke="#f97316"/>
+                  <circle cx="46" cy="153" r="2.5" stroke="#16a34a"/><circle cx="81" cy="141" r="2.5" stroke="#16a34a"/><circle cx="127" cy="126" r="2.5" stroke="#16a34a"/><circle cx="174" cy="110" r="2.5" stroke="#16a34a"/><circle cx="220" cy="94" r="2.5" stroke="#16a34a"/><circle cx="257" cy="82" r="2.5" stroke="#16a34a"/><circle cx="338" cy="62" r="2.5" stroke="#16a34a"/>
+                </g>
+                <g font-size="8.5" fill="#64748b">
+                  <line x1="66" y1="8" x2="82" y2="8" stroke="#2563eb" stroke-width="2"/><text x="86" y="11">standard</text>
+                  <line x1="158" y1="8" x2="174" y2="8" stroke="#f97316" stroke-width="2"/><text x="178" y="11">linear</text>
+                  <line x1="250" y1="8" x2="266" y2="8" stroke="#16a34a" stroke-width="2"/><text x="270" y="11">sparse</text>
+                </g>
+                <text x="192" y="213" text-anchor="middle" fill="#334155" font-size="10" font-weight="700">sequence length n</text>
+              </svg>
+              <p class="mt-1 text-[12px] leading-snug text-slate-600">标准 attention 需要比较所有 token 对；长上下文下，连接数量快速增长。</p>
+            </section>
+          </aside>
+        </section>
+
+        <footer class="relative mx-10 mt-2 grid grid-cols-[310px_1fr_400px] gap-5 border-t-2 border-slate-300 pt-2">
+          <article class="border-r border-slate-300 pr-4">
+            <h3 class="mb-1 text-[15px] font-extrabold text-navy">结构词汇</h3>
+            <p class="text-[12.5px] leading-snug text-slate-700">Query：发起检索 · Key：提供匹配索引 · Value：提供被读取的信息 · Head：一个并行关系视角</p>
+          </article>
+          <article class="border-r border-slate-300 pr-4">
+            <h3 class="mb-1 text-[15px] font-extrabold text-navy">直觉</h3>
+            <p class="text-[12.5px] leading-snug text-slate-700">Attention 是可微分的检索机制：每个 token 先找到相关 token，再从这些位置读取信息，形成上下文化表示。</p>
+          </article>
+          <article>
+            <h3 class="mb-1 text-[15px] font-extrabold text-navy">稳定性</h3>
+            <p class="text-[12.5px] leading-snug text-slate-700">缩放避免分数过大，mask 控制可见范围，残差和 LayerNorm 保持深层网络的训练稳定。</p>
+          </article>
+        </footer>
+      </main>
+    </div>
+
+    <script>
+
+      const W = 1600;
+const H = 900;
+
+function fitSlide() {
+  const scale = Math.min((window.innerWidth - 24) / W, (window.innerHeight - 24) / H, 1);
+  const viewport = document.querySelector("#viewport");
+  const slide = document.querySelector("#slide");
+  viewport.style.width = `${W * scale}px`;
+  viewport.style.height = `${H * scale}px`;
+  slide.style.transform = `scale(${scale})`;
+}
+
+async function boot() {
+  fitSlide();
+  window.addEventListener("resize", fitSlide);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot);
+} else {
+  boot();
+}
+
+    </script>
+  </body>
+</html>

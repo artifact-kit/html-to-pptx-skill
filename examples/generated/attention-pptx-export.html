@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Attention HTML to PPTX JSX Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --line: #d8e2f0;
+        --paper: #f8fafc;
+        --navy: #08265f;
+        --cobalt: #1d4ed8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.14), transparent 30%),
+          linear-gradient(135deg, #eef2ff 0%, #f8fafc 44%, #f1f5f9 100%);
+        color: var(--ink);
+      }
+
+      main {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 32px 0;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 24px;
+        align-items: stretch;
+      }
+
+      .panel {
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.86);
+        box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
+        overflow: hidden;
+      }
+
+      .preview-header,
+      .control-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+        padding: 14px 16px;
+      }
+
+      .eyebrow {
+        margin: 0 0 6px;
+        color: var(--cobalt);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        color: var(--navy);
+        font-size: 34px;
+        line-height: 1.05;
+      }
+
+      .lead {
+        margin: 14px 0 0;
+        color: #334155;
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .source-frame {
+        width: 100%;
+        height: 430px;
+        border: 0;
+        background: #e2e8f0;
+      }
+
+      .controls {
+        display: grid;
+        gap: 16px;
+        padding: 18px;
+      }
+
+      .step-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .step {
+        min-height: 112px;
+        border: 1px solid #dbeafe;
+        border-radius: 10px;
+        background: #eff6ff;
+        padding: 12px;
+      }
+
+      .step strong {
+        display: block;
+        color: var(--navy);
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+
+      .step span {
+        color: #475569;
+        font-size: 12px;
+        line-height: 1.42;
+      }
+
+      button {
+        width: fit-content;
+        border: 0;
+        border-radius: 9px;
+        background: var(--ink);
+        color: white;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 800;
+        padding: 12px 16px;
+      }
+
+      button:disabled {
+        cursor: wait;
+        opacity: 0.72;
+      }
+
+      pre {
+        min-height: 128px;
+        margin: 0;
+        overflow: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #0f172a;
+        color: #dbeafe;
+        padding: 14px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      }
+
+      @media (max-width: 900px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .step-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+    <script src="https://unpkg.com/@artifact-kit/pptxgenjs-jsx@0.1.0/dist/pptxgenjs-jsx.browser.iife.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <article class="panel">
+          <div class="preview-header">
+            <div>
+              <p class="eyebrow">Input HTML</p>
+              <h1>Attention lecture slide</h1>
+            </div>
+          </div>
+          <iframe class="source-frame" src="../input/attention-mechanism.html" title="Input HTML slide"></iframe>
+        </article>
+
+        <article class="panel">
+          <div class="control-header">
+            <div>
+              <p class="eyebrow">Skill output</p>
+              <h1>Semantic PPTX from inline JSX</h1>
+              <p class="lead">
+                This demo does not measure the DOM or screenshot the page. It reads the slide intent, then authors a native PPTX tree with text, shapes,
+                lines, a heatmap, and a chart.
+              </p>
+            </div>
+          </div>
+          <div class="controls">
+            <div class="step-grid">
+              <div class="step">
+                <strong>1. Understand</strong>
+                <span>Identify title, learning targets, attention flow, matrix, complexity chart, and footer summaries.</span>
+              </div>
+              <div class="step">
+                <strong>2. Recreate</strong>
+                <span>Use <code>Deck</code>, <code>Slide</code>, <code>Text</code>, shapes, <code>Line</code>, and <code>LineChart</code>.</span>
+              </div>
+              <div class="step">
+                <strong>3. Download</strong>
+                <span>Validate the deck and write a PPTX directly from browser runtime.</span>
+              </div>
+            </div>
+            <button id="download">Download attention-mechanism.pptx</button>
+            <pre id="status">Ready. Click the button to generate a PowerPoint file.</pre>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script type="text/babel" data-type="module" data-presets="typescript,react">
+      /** @jsx h */
+      const {
+        Deck,
+        Fragment,
+        Line,
+        LineChart,
+        Rect,
+        RoundRect,
+        Slide,
+        Text,
+        TextRun,
+        h,
+        renderPptx,
+        validateDeck,
+      } = window.ArtifactKitPptxGenJsx;
+
+      const C = {
+        ink: "0F172A",
+        navy: "08265F",
+        cobalt: "1D4ED8",
+        paper: "F8FAFC",
+        grid: "D8E2F0",
+        slate: "64748B",
+        amber: "FFF2BF",
+        violet: "EFE2FF",
+        green: "E2F5D7",
+        rose: "FFE2DF",
+        white: "FFFFFF",
+      };
+
+      const status = document.querySelector("#status");
+      const button = document.querySelector("#download");
+
+      function panel(x, y, w, h, fill = "FFFFFF") {
+        return <RoundRect x={x} y={y} w={w} h={h} rectRadius={0.06} fill={{ color: fill, transparency: 5 }} line={{ color: "CBD5E1", width: 1 }} />;
+      }
+
+      function label(text, x, y, w, color = C.navy) {
+        return <Text x={x} y={y} w={w} h={0.18} fontSize={7.6} bold color={color} margin={0}>{text}</Text>;
+      }
+
+      function flow(x1, y1, x2, y2, color = C.navy) {
+        return <Line x={x1} y={y1} w={x2 - x1} h={y2 - y1} line={{ color, width: 1.15, beginArrowType: "none", endArrowType: "triangle" }} />;
+      }
+
+      function hexByte(value) {
+        return Math.max(0, Math.min(255, value)).toString(16).padStart(2, "0").toUpperCase();
+      }
+
+      function processBox(title, subtitle, x, y, w, fill, line) {
+        return (
+          <Fragment>
+            <RoundRect x={x} y={y} w={w} h={0.46} rectRadius={0.05} fill={{ color: fill }} line={{ color: line, width: 1 }} />
+            <Text x={x + 0.08} y={y + 0.1} w={w - 0.16} h={0.12} fontSize={7.8} bold color={C.ink} align="center" margin={0}>{title}</Text>
+            <Text x={x + 0.08} y={y + 0.27} w={w - 0.16} h={0.11} fontSize={5.6} color={C.slate} align="center" margin={0}>{subtitle}</Text>
+          </Fragment>
+        );
+      }
+
+      function miniMatrix(x, y, color) {
+        const cells = [];
+        for (let row = 0; row < 5; row += 1) {
+          for (let col = 0; col < 3; col += 1) {
+            cells.push(
+              <Rect
+                x={x + col * 0.11}
+                y={y + row * 0.075}
+                w={0.11}
+                h={0.075}
+                fill={{ color: row === col || col === 1 ? color : "F8FAFC", transparency: row === col ? 0 : 18 }}
+                line={{ color, transparency: 35, width: 0.25 }}
+              />
+            );
+          }
+        }
+        return <Fragment>{cells}</Fragment>;
+      }
+
+      function heatmap(x, y) {
+        const values = [
+          [0.95, 0.28, 0.14, 0.08, 0.18, 0.12, 0.09, 0.06],
+          [0.24, 0.88, 0.34, 0.10, 0.13, 0.20, 0.09, 0.05],
+          [0.12, 0.39, 0.90, 0.46, 0.24, 0.16, 0.18, 0.08],
+          [0.08, 0.12, 0.52, 0.96, 0.42, 0.25, 0.19, 0.10],
+          [0.18, 0.13, 0.24, 0.38, 0.92, 0.30, 0.16, 0.13],
+          [0.10, 0.18, 0.20, 0.25, 0.33, 0.86, 0.46, 0.22],
+          [0.07, 0.09, 0.13, 0.19, 0.16, 0.40, 0.82, 0.49],
+          [0.05, 0.07, 0.09, 0.13, 0.12, 0.24, 0.44, 0.94],
+        ];
+        return (
+          <Fragment>
+            <Text x={x + 0.55} y={y} w={1.05} h={0.12} fontSize={5.3} bold color="334155" align="center" margin={0}>key position j</Text>
+            {values.map((row, r) =>
+              row.map((value, c) => {
+                const red = Math.round(226 - value * 105);
+                const green = Math.round(239 - value * 89);
+                const blue = Math.round(255 - value * 75);
+                return (
+                  <Rect
+                    x={x + 0.38 + c * 0.18}
+                    y={y + 0.24 + r * 0.18}
+                    w={0.18}
+                    h={0.18}
+                    fill={{ color: `${hexByte(red)}${hexByte(green)}${hexByte(blue)}` }}
+                    line={{ color: "FFFFFF", width: 0.2 }}
+                  />
+                );
+              })
+            )}
+            <Rect x={x + 0.38} y={y + 0.24} w={1.44} h={1.44} fill={{ color: "FFFFFF", transparency: 100 }} line={{ color: "334155", width: 0.7 }} />
+            <Text x={x + 0.5} y={y + 1.8} w={1.2} h={0.14} fontSize={5.2} color={C.slate} align="center" margin={0}>attention strength</Text>
+          </Fragment>
+        );
+      }
+
+      const complexityData = [
+        { name: "standard", labels: ["16", "64", "256", "1k", "4k", "16k", "64k"], values: [3, 9, 26, 48, 72, 90, 100] },
+        { name: "linear", labels: ["16", "64", "256", "1k", "4k", "16k", "64k"], values: [12, 17, 24, 31, 38, 45, 54] },
+        { name: "sparse", labels: ["16", "64", "256", "1k", "4k", "16k", "64k"], values: [7, 15, 24, 35, 47, 58, 68] },
+      ];
+
+      const deck = (
+        <Deck
+          title="Attention Mechanism Structure"
+          author="artifact-kit"
+          subject="HTML recreated as native PowerPoint with @artifact-kit/pptxgenjs-jsx"
+          layout={{ name: "WIDE", width: 13.333, height: 7.5 }}
+          theme={{ headFontFace: "Arial", bodyFontFace: "Arial", lang: "zh-CN" }}
+        >
+          <Slide background={{ color: C.paper }}>
+            <Rect x={0} y={0} w={13.333} h={7.5} fill={{ color: C.paper }} line={{ color: C.paper, transparency: 100 }} />
+            <Rect x={0} y={0} w={13.333} h={0.12} fill={{ color: C.navy }} line={{ color: C.navy, transparency: 100 }} />
+            <Text x={0.58} y={0.33} w={5.2} h={0.18} fontSize={8.6} bold color={C.cobalt} margin={0}>TRANSFORMER ARCHITECTURE LECTURE</Text>
+            <Text x={0.58} y={0.55} w={7.8} h={0.5} fontSize={28} bold color={C.navy} margin={0}>Attention 机制：结构与计算图</Text>
+            <Text x={0.6} y={1.03} w={6.9} h={0.26} fontSize={13.3} italic color="475569" margin={0}>Scaled dot-product attention as differentiable content-addressed retrieval</Text>
+
+            {panel(8.82, 0.32, 3.88, 1.03)}
+            <Text x={9.1} y={0.49} w={2.9} h={0.17} fontSize={8.2} bold color={C.navy} margin={0}>Learning Targets</Text>
+            <Text x={9.1} y={0.73} w={3.16} h={0.42} fontSize={6.7} color="475569" breakLine={false} fit="shrink" margin={0.02}>
+              <TextRun text="• token-token 相似度矩阵" options={{ breakLine: true }} />
+              <TextRun text="• 缩放、mask 与 softmax" options={{ breakLine: true }} />
+              <TextRun text="• multi-head 的关系子空间" />
+            </Text>
+
+            {panel(0.48, 1.45, 8.45, 4.78)}
+            <Text x={0.75} y={1.67} w={4.3} h={0.2} fontSize={10.2} bold color={C.navy} margin={0}>1  Attention 计算结构：从嵌入到上下文向量</Text>
+            <Text x={0.75} y={2.05} w={0.55} h={0.16} fontSize={8} bold color={C.ink} align="center" margin={0}>X</Text>
+            {miniMatrix(0.75, 2.22, "5B91C8")}
+            {flow(1.25, 2.43, 1.85, 2.43)}
+            {flow(1.85, 2.43, 2.35, 2.05)}
+            {flow(1.85, 2.43, 2.35, 2.43)}
+            {flow(1.85, 2.43, 2.35, 2.81)}
+            {processBox("Query map", "query projection", 2.35, 1.82, 1.15, C.violet, "8B5BB2")}
+            {processBox("Key map", "key projection", 2.35, 2.28, 1.15, C.amber, "C89012")}
+            {processBox("Value map", "value projection", 2.35, 2.74, 1.15, C.green, "609956")}
+            {flow(3.5, 2.05, 3.88, 2.05)}
+            {flow(3.5, 2.51, 3.88, 2.51)}
+            {flow(3.5, 2.97, 3.88, 2.97)}
+            {label("Q", 3.9, 1.75, 0.36, "6D28D9")}
+            {miniMatrix(3.88, 1.9, "8B5BB2")}
+            {label("K", 3.9, 2.33, 0.36, "A16207")}
+            {miniMatrix(3.88, 2.48, "C89012")}
+            {label("V", 3.9, 2.91, 0.36, "166534")}
+            {miniMatrix(3.88, 3.06, "609956")}
+
+            <RoundRect x={4.62} y={1.75} w={3.85} h={2.22} rectRadius={0.1} fill={{ color: "FFFFFF", transparency: 100 }} line={{ color: "2563EB", width: 1.15, dash: "dash" }} />
+            <Text x={4.82} y={1.93} w={2.3} h={0.18} fontSize={10.1} bold color={C.navy} margin={0}>Scaled dot-product attention</Text>
+            {flow(4.25, 2.15, 4.78, 2.32)}
+            {flow(4.25, 2.72, 4.78, 2.4)}
+            {processBox("Similarity", "token pairs", 4.82, 2.2, 0.82, C.violet, "8B5BB2")}
+            {flow(5.64, 2.43, 6.06, 2.43)}
+            {processBox("Scale", "stabilize", 6.08, 2.2, 0.7, C.rose, "D35C54")}
+            {flow(6.78, 2.43, 7.14, 2.43)}
+            {processBox("Mask", "hide invalid", 7.16, 2.2, 0.68, C.white, "64748B")}
+            {flow(7.84, 2.43, 8.24, 2.43)}
+            {processBox("Softmax", "row weights", 8.26, 2.2, 0.84, C.amber, "C89012")}
+            {flow(9.1, 2.43, 9.53, 2.43)}
+            {processBox("Weighted", "values", 9.55, 2.2, 0.86, C.green, "609956")}
+            {flow(4.23, 3.22, 9.55, 2.66, "609956")}
+            <RoundRect x={5.02} y={3.22} w={2.84} h={0.46} rectRadius={0.05} fill={{ color: "F8FBFF" }} line={{ color: "93B2DC", width: 0.8 }} />
+            <Text x={5.22} y={3.35} w={2.45} h={0.12} fontSize={6.5} bold color={C.ink} align="center" margin={0}>scores become a distribution over source tokens</Text>
+
+            <Text x={6.0} y={4.1} w={2.35} h={0.17} fontSize={8.6} bold color={C.navy} margin={0}>Encoder context</Text>
+            {processBox("Add & Norm", "", 6.1, 4.35, 1.05, "EFF6FF", "7BA3D7")}
+            {processBox("Position-wise", "FFN + GELU", 6.0, 4.88, 1.28, "EAF4FF", "4F83C7")}
+            {processBox("Add & Norm", "", 6.1, 5.58, 1.05, "EFF6FF", "7BA3D7")}
+            {flow(6.62, 5.58, 6.62, 5.34)}
+            {flow(6.62, 4.88, 6.62, 4.8)}
+
+            <RoundRect x={7.48} y={4.32} w={1.18} h={0.42} rectRadius={0.05} fill={{ color: "FEF3C7" }} line={{ color: "F59E0B", width: 0.7 }} />
+            <Text x={7.58} y={4.46} w={0.96} h={0.1} fontSize={5.8} bold color={C.navy} align="center" margin={0}>context vector</Text>
+            {flow(7.15, 4.55, 7.48, 4.55)}
+
+            {panel(0.48, 6.38, 3.95, 0.72)}
+            <Text x={0.7} y={6.52} w={0.55} h={0.16} fontSize={8.4} bold color={C.navy} margin={0}>2</Text>
+            <Text x={1.0} y={6.52} w={1.75} h={0.16} fontSize={8.4} bold color={C.navy} margin={0}>Multi-Head Attention</Text>
+            <Text x={1.0} y={6.76} w={2.95} h={0.15} fontSize={6.3} color="475569" margin={0}>多个 head 并行读取局部邻近、长程依赖、句法角色或指代线索。</Text>
+            {processBox("projection set 1", "", 4.72, 6.42, 0.92, C.violet, "94A3B8")}
+            {processBox("head 1", "", 5.9, 6.42, 0.88, "EFF6FF", "7BA3D7")}
+            {processBox("Concat", "output mix", 7.12, 6.42, 0.82, C.rose, "D35C54")}
+            {flow(5.64, 6.65, 5.9, 6.65)}
+            {flow(6.78, 6.65, 7.12, 6.65)}
+
+            {panel(9.15, 1.45, 3.72, 2.0)}
+            <Text x={9.4} y={1.67} w={2.3} h={0.18} fontSize={9.1} bold color={C.navy} margin={0}>4  Example Attention Matrix</Text>
+            {heatmap(9.48, 1.91)}
+            <Text x={11.15} y={2.55} w={1.15} h={0.4} fontSize={6.2} color="475569" margin={0}>深色代表更强的连接；局部块状结构常对应短语、句法或共指关系。</Text>
+
+            {panel(9.15, 3.68, 3.72, 2.22)}
+            <Text x={9.4} y={3.9} w={2.1} h={0.18} fontSize={9.1} bold color={C.navy} margin={0}>5  Complexity Scaling</Text>
+            <LineChart
+              data={complexityData}
+              x={9.38}
+              y={4.23}
+              w={2.85}
+              h={1.18}
+              showLegend
+              legendPos="t"
+              showValue={false}
+              showTitle={false}
+              chartColors={["2563EB", "F97316", "16A34A"]}
+              catAxisLabelColor="64748B"
+              valAxisLabelColor="64748B"
+              valAxisHidden
+              lineSize={1.5}
+              markerSize={3}
+            />
+            <Text x={9.45} y={5.55} w={2.9} h={0.16} fontSize={6.2} color="475569" margin={0}>标准 attention 需要比较所有 token 对；长上下文下连接数量快速增长。</Text>
+
+            {panel(9.15, 6.16, 3.72, 0.94)}
+            <Text x={9.38} y={6.32} w={0.9} h={0.14} fontSize={7.4} bold color={C.navy} margin={0}>稳定性</Text>
+            <Text x={9.38} y={6.56} w={3.04} h={0.28} fontSize={6.2} color="475569" margin={0}>缩放避免分数过大，mask 控制可见范围，残差和 LayerNorm 保持深层网络训练稳定。</Text>
+
+            <Text x={0.58} y={7.22} w={5.9} h={0.12} fontSize={5.8} color="64748B" margin={0}>Created from HTML with @artifact-kit/pptxgenjs-jsx: semantic text, shapes, lines, heatmap cells, and native chart data.</Text>
+          </Slide>
+        </Deck>
+      );
+
+      button.addEventListener("click", async () => {
+        button.disabled = true;
+        const issues = validateDeck(deck);
+        if (issues.some((issue) => issue.level === "error")) {
+          status.textContent = JSON.stringify(issues, null, 2);
+          button.disabled = false;
+          return;
+        }
+
+        status.textContent = "Rendering PPTX from inline JSX...";
+        try {
+          await renderPptx(deck, { fileName: "attention-mechanism.pptx" });
+          status.textContent = "Downloaded attention-mechanism.pptx";
+        } catch (error) {
+          status.textContent = error instanceof Error ? error.stack || error.message : String(error);
+        } finally {
+          button.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
