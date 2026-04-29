@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HTML to PPTX JSX</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f8fafc;
+        color: #111827;
+      }
+
+      main {
+        width: min(760px, calc(100vw - 32px));
+      }
+
+      button {
+        border: 0;
+        border-radius: 8px;
+        background: #111827;
+        color: #ffffff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+        padding: 12px 16px;
+      }
+
+      pre {
+        overflow: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 16px;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "@artifact-kit/pptxgenjs-jsx": "https://unpkg.com/@artifact-kit/pptxgenjs-jsx@0.1.0/dist/pptxgenjs-jsx.browser.es.js",
+          "@artifact-kit/pptxgenjs-jsx/jsx-runtime": "https://unpkg.com/@artifact-kit/pptxgenjs-jsx@0.1.0/dist/jsx-runtime.browser.es.js",
+          "@artifact-kit/pptxgenjs-jsx/jsx-dev-runtime": "https://unpkg.com/@artifact-kit/pptxgenjs-jsx@0.1.0/dist/jsx-runtime.browser.es.js"
+        }
+      }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>HTML to PPTX JSX</h1>
+      <button id="download">Download PPTX</button>
+      <pre id="status">Ready</pre>
+    </main>
+
+    <script type="text/babel" data-type="module" data-presets="typescript,react">
+      /** @jsx h */
+      import {
+        Deck,
+        RoundRect,
+        Slide,
+        Text,
+        h,
+        renderPptx,
+        validateDeck,
+      } from "@artifact-kit/pptxgenjs-jsx";
+
+      const status = document.querySelector("#status");
+
+      const deck = (
+        <Deck title="Generated deck" author="artifact-kit" layout={{ name: "WIDE", width: 13.333, height: 7.5 }}>
+          <Slide background={{ color: "FFFFFF" }}>
+            <RoundRect x={0.65} y={0.55} w={12.0} h={6.4} rectRadius={0.08} fill={{ color: "F8FAFC" }} line={{ color: "E5E7EB", width: 1 }} />
+            <Text x={0.95} y={0.9} w={8.2} h={0.55} fontSize={28} bold color="111827" margin={0}>
+              Replace this slide with semantic PPTX JSX
+            </Text>
+            <Text x={0.95} y={1.65} w={8.8} h={0.45} fontSize={15} color="374151" margin={0}>
+              Inspect the source HTML, decide slide boundaries, then author Deck and Slide nodes directly.
+            </Text>
+          </Slide>
+        </Deck>
+      );
+
+      document.querySelector("#download").addEventListener("click", async () => {
+        const issues = validateDeck(deck);
+        if (issues.some((issue) => issue.level === "error")) {
+          status.textContent = JSON.stringify(issues, null, 2);
+          return;
+        }
+
+        status.textContent = "Rendering...";
+        await renderPptx(deck, { fileName: "generated-deck.pptx" });
+        status.textContent = "Downloaded generated-deck.pptx";
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,68 @@
+---
+name: html-to-pptx-jsx
+description: Create downloadable PowerPoint decks from HTML pages, browser-rendered UI, screenshots, or page descriptions by writing inline browser JSX with @artifact-kit/pptxgenjs-jsx. Use when an agent needs to convert or recreate HTML/web content as PPTX slides, especially from a local HTML file, generated web page, dashboard, report, landing page, or multi-section document, without using DOM measurement or canvas rendering.
+---
+
+# HTML to PPTX JSX
+
+Use `@artifact-kit/pptxgenjs-jsx` to recreate a page as a declarative PPTX tree inside browser-run HTML. First version rule: do not measure the DOM and do not render HTML/canvas into slides. Understand each page or section, then author one JSX `<Slide>` per intended slide and download the PPTX.
+
+## Core Workflow
+
+1. Inspect the source HTML/page enough to understand the content hierarchy, visual grouping, chart/table meaning, and intended slide boundaries.
+2. Create or edit a local HTML file that imports Babel Standalone and `@artifact-kit/pptxgenjs-jsx`.
+3. In an inline `<script type="text/babel" data-type="module" data-presets="typescript,react">`, use Babel classic JSX with `/** @jsx h */` and import `h` from the package.
+4. Build a `<Deck>` with explicit `<Slide>` children. Recreate text, shapes, images, tables, and charts with package components.
+5. Add a download button that calls `validateDeck(deck)` and then `renderPptx(deck, { fileName })`.
+6. Serve the HTML over HTTP, open it in a browser, check console errors, then trigger the download.
+
+Start from [assets/browser-inline-jsx-template.html](assets/browser-inline-jsx-template.html) when making a standalone local HTML tool.
+
+## Authoring Rules
+
+- Prefer semantic PPT objects over screenshots: `Text`, `TextRun`, shape components, `Table`, `Image`, and chart components.
+- Use one component per PptxGenJS concept; do not call imperative `slide.addText`, `slide.addShape`, or `slide.addChart` unless using the package escape hatch for unsupported behavior.
+- Use fixed slide units in inches. Default to wide layout `{ name: "WIDE", width: 13.333, height: 7.5 }`.
+- Keep all slide positions explicit: every visible element should have `x`, `y`, `w`, and `h` unless the component docs say otherwise.
+- Use browser inline JSX only for local authoring or agent workflows. For shipped web apps, precompile with Vite or another build tool.
+- Pin the CDN package version once a deck generation workflow matters for reproducibility.
+
+## Documentation Lookup
+
+When exact components or props matter, read the package docs in this order:
+
+1. `node_modules/@artifact-kit/pptxgenjs-jsx/llms.txt`
+2. `node_modules/@artifact-kit/pptxgenjs-jsx/docs/llm/quickstart.md`
+3. `node_modules/@artifact-kit/pptxgenjs-jsx/docs/llm/component-selection.md`
+4. `node_modules/@artifact-kit/pptxgenjs-jsx/docs/reference/common-props.md`
+5. Shape-heavy decks: `docs/reference/shape-props.md`
+6. Chart-heavy decks: `docs/reference/chart-props.md`
+7. Full upstream surface: `docs/reference/all-upstream-props.md`
+
+If the package is not installed locally, use the same files from the `artifact-kit/pptxgenjs-jsx` repository or npm package.
+
+## Browser Inline JSX Pattern
+
+Use this pattern, not `@jsxImportSource`, inside Babel Standalone:
+
+```tsx
+/** @jsx h */
+import { Deck, Slide, Text, h, validateDeck, renderPptx } from "@artifact-kit/pptxgenjs-jsx";
+
+const deck = (
+  <Deck title="Generated deck" layout={{ name: "WIDE", width: 13.333, height: 7.5 }}>
+    <Slide background={{ color: "FFFFFF" }}>
+      <Text x={0.7} y={0.6} w={6} h={0.5} fontSize={24} bold color="111827" margin={0}>
+        Slide title
+      </Text>
+    </Slide>
+  </Deck>
+);
+
+const issues = validateDeck(deck);
+if (!issues.some((issue) => issue.level === "error")) {
+  await renderPptx(deck, { fileName: "deck.pptx" });
+}
+```
+
+For a fuller checklist and conversion heuristics, read [references/html-recreation-guide.md](references/html-recreation-guide.md).

@@ -1,0 +1,4 @@
+interface:
+  display_name: "HTML to PPTX JSX"
+  short_description: "Create PPTX files from HTML using JSX"
+  default_prompt: "Use $html-to-pptx-jsx to turn this HTML page into a downloadable PPTX."
