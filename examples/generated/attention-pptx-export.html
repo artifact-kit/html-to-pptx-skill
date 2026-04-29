@@ -249,8 +249,8 @@
       const status = document.querySelector("#status");
       const button = document.querySelector("#download");
 
-      function panel(x, y, w, h, fill = "FFFFFF") {
-        return <RoundRect x={x} y={y} w={w} h={h} rectRadius={0.06} fill={{ color: fill, transparency: 5 }} line={{ color: "CBD5E1", width: 1 }} />;
+      function panel(x, y, w, height, fill = "FFFFFF") {
+        return <RoundRect x={x} y={y} w={w} h={height} rectRadius={0.06} fill={{ color: fill, transparency: 5 }} line={{ color: "CBD5E1", width: 1 }} />;
       }
 
       function label(text, x, y, w, color = C.navy) {
