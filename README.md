@@ -4,7 +4,7 @@ Teach an agent to turn HTML pages into downloadable, editable PowerPoint decks w
 
 Repository: [`artifact-kit/html-to-pptx-skill`](https://github.com/artifact-kit/html-to-pptx-skill)
 
-This skill is measure-first: keep the source HTML clean, copy it into an exporter page, add DOM measurement markers to the exporter, and generate native PPTX objects from measured boxes plus SVG source geometry.
+This skill uses a browser exporter workflow: keep the source HTML clean, copy it into an exporter page, flatten every slide/page into a top-to-bottom container, add DOM measurement markers to the exporter, and generate native PPTX objects from measured boxes plus SVG source geometry.
 
 ## What It Does
 
@@ -32,8 +32,8 @@ Agent installation instruction:
 Install the HTML to PPTX skill from https://github.com/artifact-kit/html-to-pptx-skill.
 Clone it into your skill directory, then load SKILL.md when the user asks to convert HTML,
 dashboards, reports, slide-like pages, or SVG-heavy pages into editable PowerPoint decks.
-After loading the skill, follow its measure-first workflow and referenced docs before writing
-the exporter HTML.
+After loading the skill, follow its copy-first browser exporter workflow: copy the source,
+flatten slides vertically, use the CDN browser library, measure DOM nodes, then export.
 ```
 
 To update an existing install:
@@ -110,12 +110,12 @@ The attention example is included as a concrete proof of the workflow:
 ## Agent Workflow
 
 1. Read `SKILL.md`.
-2. Read `references/measure-first-workflow.md`.
-3. Read `references/coordinate-policy.md`.
-4. Read `references/one-shot-agent-contract.md` before generating an exporter in one pass.
-5. Read `references/native-reconstruction-patterns.md` for complex pages with shapes, diagrams, matrices, or charts.
-6. Create the required stage-gate artifacts: file plan, component tree, measurement manifest, SVG inventory, component API plan, and raster fallback list.
-7. Load component docs only as needed.
+2. Copy the source HTML into a separate exporter file; do not edit the source.
+3. Flatten all slides/pages into one visible vertical container in the exporter copy.
+4. Add one export button and load the CDN browser build plus Babel Standalone.
+5. Add `data-ak-*` measurement attributes to slide roots and reusable DOM nodes.
+6. In the export click handler, call `measureArtifacts`, read boxes/fonts/layouts, recreate each slide with documented JSX components and props, validate, then export.
+7. Read `examples/generated/attention-pptx-export.html`, `assets/browser-inline-jsx-template.html`, and the component/props docs named in `SKILL.md` before coding.
 8. Before handoff, run through `references/audit-checklist.md`.
 
 ## Design Positioning

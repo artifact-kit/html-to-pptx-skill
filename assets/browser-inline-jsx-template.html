@@ -58,18 +58,21 @@
     <script type="text/babel" data-type="module" data-presets="typescript,react">
       /** @jsx pptxElement */
       /*
-        Minimal exporter template.
+        Minimal browser exporter template.
 
-        For real HTML pages, do not stop at this text-only example. First create:
-        - component tree
-        - measurement manifest
-        - SVG inventory
-        - component API plan
-        - raster fallback list
+        Real workflow:
+        1. Copy the original HTML into a separate exporter file.
+        2. Make every slide/page visible in one vertical container.
+        3. Add this CDN + Babel inline JSX export button flow.
+        4. Mark slide roots and reusable DOM nodes with data-ak-* attributes.
+        5. Measure in the click handler, recreate slides with native components, validate, export.
 
         For cards, badges, icons, arrows, SVG primitives, heatmaps, and charts, read:
+        - references/pptxgenjs-jsx-component-selection.md
+        - references/pptxgenjs-jsx-common-props.md
+        - references/pptxgenjs-jsx-shape-props.md
+        - references/pptxgenjs-jsx-chart-props.md
         - references/native-reconstruction-patterns.md
-        - assets/complex-native-exporter-example.html
       */
       const {
         Deck,
