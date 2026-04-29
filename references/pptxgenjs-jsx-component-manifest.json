@@ -1,0 +1,408 @@
+{
+  "generatedFrom": "src/schema/component-manifest.ts plus pptxgenjs/types/index.d.ts",
+  "designRule": "Prefer the most specific component available. Use generic Shape, Chart, or Raw only when a newer or rare upstream PptxGenJS API is not covered by a typed component.",
+  "components": [
+    {
+      "name": "Deck",
+      "category": "root",
+      "mapsTo": "new PptxGenJS()",
+      "useWhen": "Root presentation.",
+      "propsInterface": "DeckProps"
+    },
+    {
+      "name": "Presentation",
+      "category": "root",
+      "mapsTo": "Deck alias",
+      "useWhen": "Readable alias for Deck.",
+      "propsInterface": "DeckProps"
+    },
+    {
+      "name": "Slide",
+      "category": "structure",
+      "mapsTo": "pptx.addSlide",
+      "useWhen": "Create a slide.",
+      "propsInterface": "SlideProps"
+    },
+    {
+      "name": "Layout",
+      "category": "structure",
+      "mapsTo": "pptx.defineLayout",
+      "useWhen": "Define an additional custom layout.",
+      "propsInterface": "LayoutProps"
+    },
+    {
+      "name": "Section",
+      "category": "structure",
+      "mapsTo": "pptx.addSection",
+      "useWhen": "Group nested slides into a PowerPoint section.",
+      "propsInterface": "SectionProps"
+    },
+    {
+      "name": "Master",
+      "category": "structure",
+      "mapsTo": "pptx.defineSlideMaster",
+      "useWhen": "Define a reusable slide master.",
+      "propsInterface": "MasterProps"
+    },
+    {
+      "name": "Placeholder",
+      "category": "structure",
+      "mapsTo": "SlideMasterProps.objects[].placeholder",
+      "useWhen": "Add a placeholder inside Master.",
+      "propsInterface": "PlaceholderProps"
+    },
+    {
+      "name": "Text",
+      "category": "text",
+      "mapsTo": "slide.addText",
+      "useWhen": "Text box, rich text container, or text inside a shape.",
+      "propsInterface": "TextProps"
+    },
+    {
+      "name": "TextRun",
+      "category": "text",
+      "mapsTo": "PptxGenJS.TextProps[] item",
+      "useWhen": "Per-run formatting inside Text.",
+      "propsInterface": "TextRunProps"
+    },
+    {
+      "name": "Notes",
+      "category": "text",
+      "mapsTo": "slide.addNotes",
+      "useWhen": "Speaker notes.",
+      "propsInterface": "NotesProps"
+    },
+    {
+      "name": "Rect",
+      "category": "shape",
+      "mapsTo": "slide.addShape('rect')",
+      "useWhen": "Plain rectangle.",
+      "propsInterface": "RectProps"
+    },
+    {
+      "name": "RoundRect",
+      "category": "shape",
+      "mapsTo": "slide.addShape('roundRect')",
+      "useWhen": "Rounded rectangle; supports rectRadius.",
+      "propsInterface": "RoundRectProps"
+    },
+    {
+      "name": "Ellipse",
+      "category": "shape",
+      "mapsTo": "slide.addShape('ellipse')",
+      "useWhen": "Ellipse or oval.",
+      "propsInterface": "EllipseProps"
+    },
+    {
+      "name": "Line",
+      "category": "shape",
+      "mapsTo": "slide.addShape('line')",
+      "useWhen": "Line or arrow line.",
+      "propsInterface": "LineProps"
+    },
+    {
+      "name": "Arc",
+      "category": "shape",
+      "mapsTo": "slide.addShape('arc')",
+      "useWhen": "Arc shape; supports angleRange.",
+      "propsInterface": "ArcProps"
+    },
+    {
+      "name": "BlockArc",
+      "category": "shape",
+      "mapsTo": "slide.addShape('blockArc')",
+      "useWhen": "Thick arc; supports angleRange and arcThicknessRatio.",
+      "propsInterface": "BlockArcProps"
+    },
+    {
+      "name": "PieShape",
+      "category": "shape",
+      "mapsTo": "slide.addShape('pie')",
+      "useWhen": "Pie-slice shape; not a data chart.",
+      "propsInterface": "PieShapeProps"
+    },
+    {
+      "name": "Triangle",
+      "category": "shape",
+      "mapsTo": "slide.addShape('triangle')",
+      "useWhen": "Triangle shape.",
+      "propsInterface": "TriangleProps"
+    },
+    {
+      "name": "RightTriangle",
+      "category": "shape",
+      "mapsTo": "slide.addShape('rtTriangle')",
+      "useWhen": "Right triangle.",
+      "propsInterface": "TriangleProps"
+    },
+    {
+      "name": "Diamond",
+      "category": "shape",
+      "mapsTo": "slide.addShape('diamond')",
+      "useWhen": "Diamond shape.",
+      "propsInterface": "DiamondProps"
+    },
+    {
+      "name": "Pentagon",
+      "category": "shape",
+      "mapsTo": "slide.addShape('pentagon')",
+      "useWhen": "Pentagon shape.",
+      "propsInterface": "PentagonProps"
+    },
+    {
+      "name": "Hexagon",
+      "category": "shape",
+      "mapsTo": "slide.addShape('hexagon')",
+      "useWhen": "Hexagon shape.",
+      "propsInterface": "HexagonProps"
+    },
+    {
+      "name": "Star",
+      "category": "shape",
+      "mapsTo": "slide.addShape('star5')",
+      "useWhen": "Default five-point star.",
+      "propsInterface": "StarProps"
+    },
+    {
+      "name": "Star4",
+      "category": "shape",
+      "mapsTo": "slide.addShape('star4')",
+      "useWhen": "Four-point star.",
+      "propsInterface": "StarProps"
+    },
+    {
+      "name": "Star5",
+      "category": "shape",
+      "mapsTo": "slide.addShape('star5')",
+      "useWhen": "Five-point star.",
+      "propsInterface": "StarProps"
+    },
+    {
+      "name": "Star6",
+      "category": "shape",
+      "mapsTo": "slide.addShape('star6')",
+      "useWhen": "Six-point star.",
+      "propsInterface": "StarProps"
+    },
+    {
+      "name": "Star8",
+      "category": "shape",
+      "mapsTo": "slide.addShape('star8')",
+      "useWhen": "Eight-point star.",
+      "propsInterface": "StarProps"
+    },
+    {
+      "name": "Star10",
+      "category": "shape",
+      "mapsTo": "slide.addShape('star10')",
+      "useWhen": "Ten-point star.",
+      "propsInterface": "StarProps"
+    },
+    {
+      "name": "LeftArrow",
+      "category": "shape",
+      "mapsTo": "slide.addShape('leftArrow')",
+      "useWhen": "Left arrow block shape.",
+      "propsInterface": "ArrowProps"
+    },
+    {
+      "name": "RightArrow",
+      "category": "shape",
+      "mapsTo": "slide.addShape('rightArrow')",
+      "useWhen": "Right arrow block shape.",
+      "propsInterface": "ArrowProps"
+    },
+    {
+      "name": "UpArrow",
+      "category": "shape",
+      "mapsTo": "slide.addShape('upArrow')",
+      "useWhen": "Up arrow block shape.",
+      "propsInterface": "ArrowProps"
+    },
+    {
+      "name": "DownArrow",
+      "category": "shape",
+      "mapsTo": "slide.addShape('downArrow')",
+      "useWhen": "Down arrow block shape.",
+      "propsInterface": "ArrowProps"
+    },
+    {
+      "name": "LeftRightArrow",
+      "category": "shape",
+      "mapsTo": "slide.addShape('leftRightArrow')",
+      "useWhen": "Bidirectional left/right arrow.",
+      "propsInterface": "ArrowProps"
+    },
+    {
+      "name": "UpDownArrow",
+      "category": "shape",
+      "mapsTo": "slide.addShape('upDownArrow')",
+      "useWhen": "Bidirectional up/down arrow.",
+      "propsInterface": "ArrowProps"
+    },
+    {
+      "name": "Chevron",
+      "category": "shape",
+      "mapsTo": "slide.addShape('chevron')",
+      "useWhen": "Chevron shape.",
+      "propsInterface": "ShapeOptionsProps"
+    },
+    {
+      "name": "Cloud",
+      "category": "shape",
+      "mapsTo": "slide.addShape('cloud')",
+      "useWhen": "Cloud shape.",
+      "propsInterface": "ShapeOptionsProps"
+    },
+    {
+      "name": "Heart",
+      "category": "shape",
+      "mapsTo": "slide.addShape('heart')",
+      "useWhen": "Heart shape.",
+      "propsInterface": "ShapeOptionsProps"
+    },
+    {
+      "name": "Donut",
+      "category": "shape",
+      "mapsTo": "slide.addShape('donut')",
+      "useWhen": "Donut shape.",
+      "propsInterface": "ShapeOptionsProps"
+    },
+    {
+      "name": "Plus",
+      "category": "shape",
+      "mapsTo": "slide.addShape('plus')",
+      "useWhen": "Plus/cross shape.",
+      "propsInterface": "ShapeOptionsProps"
+    },
+    {
+      "name": "Shape",
+      "category": "escape-hatch",
+      "mapsTo": "slide.addShape(shape, options)",
+      "useWhen": "Any PptxGenJS shape not exposed as a dedicated component.",
+      "propsInterface": "ShapeProps",
+      "notes": [
+        "Use PptxGenJS.SHAPE_NAME values from the generated reference table."
+      ]
+    },
+    {
+      "name": "AreaChart",
+      "category": "chart",
+      "mapsTo": "slide.addChart('area')",
+      "useWhen": "Area chart.",
+      "propsInterface": "AreaChartProps"
+    },
+    {
+      "name": "BarChart",
+      "category": "chart",
+      "mapsTo": "slide.addChart('bar')",
+      "useWhen": "Bar or column chart.",
+      "propsInterface": "BarChartProps"
+    },
+    {
+      "name": "Bar3DChart",
+      "category": "chart",
+      "mapsTo": "slide.addChart('bar3D')",
+      "useWhen": "3D bar chart.",
+      "propsInterface": "Bar3DChartProps"
+    },
+    {
+      "name": "BubbleChart",
+      "category": "chart",
+      "mapsTo": "slide.addChart('bubble')",
+      "useWhen": "Bubble chart; data can include sizes.",
+      "propsInterface": "BubbleChartProps"
+    },
+    {
+      "name": "DoughnutChart",
+      "category": "chart",
+      "mapsTo": "slide.addChart('doughnut')",
+      "useWhen": "Doughnut chart.",
+      "propsInterface": "DoughnutChartProps"
+    },
+    {
+      "name": "LineChart",
+      "category": "chart",
+      "mapsTo": "slide.addChart('line')",
+      "useWhen": "Line chart.",
+      "propsInterface": "LineChartProps"
+    },
+    {
+      "name": "PieChart",
+      "category": "chart",
+      "mapsTo": "slide.addChart('pie')",
+      "useWhen": "Pie data chart.",
+      "propsInterface": "PieChartProps"
+    },
+    {
+      "name": "RadarChart",
+      "category": "chart",
+      "mapsTo": "slide.addChart('radar')",
+      "useWhen": "Radar chart.",
+      "propsInterface": "RadarChartProps"
+    },
+    {
+      "name": "ScatterChart",
+      "category": "chart",
+      "mapsTo": "slide.addChart('scatter')",
+      "useWhen": "Scatter chart.",
+      "propsInterface": "ScatterChartProps"
+    },
+    {
+      "name": "Chart",
+      "category": "escape-hatch",
+      "mapsTo": "slide.addChart(type, data, options)",
+      "useWhen": "Multi-chart or any raw chart type usage.",
+      "propsInterface": "ChartProps"
+    },
+    {
+      "name": "Image",
+      "category": "media",
+      "mapsTo": "slide.addImage",
+      "useWhen": "Image by path or data URI/base64.",
+      "propsInterface": "ImageProps"
+    },
+    {
+      "name": "Media",
+      "category": "media",
+      "mapsTo": "slide.addMedia",
+      "useWhen": "Audio, video, or online media.",
+      "propsInterface": "MediaProps"
+    },
+    {
+      "name": "Table",
+      "category": "table",
+      "mapsTo": "slide.addTable",
+      "useWhen": "PowerPoint table.",
+      "propsInterface": "TableProps"
+    },
+    {
+      "name": "TableRow",
+      "category": "table",
+      "mapsTo": "PptxGenJS.TableRow",
+      "useWhen": "Declarative row inside Table.",
+      "propsInterface": "TableRowProps"
+    },
+    {
+      "name": "TableCell",
+      "category": "table",
+      "mapsTo": "PptxGenJS.TableCell",
+      "useWhen": "Declarative cell inside TableRow.",
+      "propsInterface": "TableCellProps"
+    },
+    {
+      "name": "TableToSlides",
+      "category": "table",
+      "mapsTo": "pptx.tableToSlides",
+      "useWhen": "Convert an HTML table in browser/runtime DOM.",
+      "propsInterface": "TableToSlidesProps"
+    },
+    {
+      "name": "Raw",
+      "category": "escape-hatch",
+      "mapsTo": "custom render callback",
+      "useWhen": "Newest or unsupported PptxGenJS APIs.",
+      "propsInterface": "RawProps"
+    }
+  ]
+}

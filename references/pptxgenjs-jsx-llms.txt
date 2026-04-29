@@ -1,0 +1,17 @@
+# @artifact-kit/pptxgenjs-jsx LLM Loading Guide
+
+Always load:
+- docs/llm/quickstart.md
+- component-manifest.json
+
+Load when choosing components:
+- docs/llm/component-selection.md
+
+Load on demand:
+- docs/reference/common-props.md for normal slides, text, image, table, media, deck, and write options.
+- docs/reference/shape-props.md when using Shape or uncommon shapes.
+- docs/reference/chart-props.md when using charts.
+- docs/reference/all-upstream-props.md only when common/chart/shape docs are insufficient.
+
+Generation rule:
+Prefer dedicated components. Use generic Shape, Chart, or Raw only to unlock an upstream PptxGenJS feature that has no dedicated component.

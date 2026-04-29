@@ -29,17 +29,18 @@ Start from [assets/browser-inline-jsx-template.html](assets/browser-inline-jsx-t
 
 ## Documentation Lookup
 
-When exact components or props matter, read the package docs in this order:
+When exact components or props matter, read the vendored package docs in this skill in this order:
 
-1. `node_modules/@artifact-kit/pptxgenjs-jsx/llms.txt`
-2. `node_modules/@artifact-kit/pptxgenjs-jsx/docs/llm/quickstart.md`
-3. `node_modules/@artifact-kit/pptxgenjs-jsx/docs/llm/component-selection.md`
-4. `node_modules/@artifact-kit/pptxgenjs-jsx/docs/reference/common-props.md`
-5. Shape-heavy decks: `docs/reference/shape-props.md`
-6. Chart-heavy decks: `docs/reference/chart-props.md`
-7. Full upstream surface: `docs/reference/all-upstream-props.md`
+1. [references/pptxgenjs-jsx-llms.txt](references/pptxgenjs-jsx-llms.txt)
+2. [references/pptxgenjs-jsx-quickstart.md](references/pptxgenjs-jsx-quickstart.md)
+3. [references/pptxgenjs-jsx-component-selection.md](references/pptxgenjs-jsx-component-selection.md)
+4. [references/pptxgenjs-jsx-common-props.md](references/pptxgenjs-jsx-common-props.md)
+5. Shape-heavy decks: [references/pptxgenjs-jsx-shape-props.md](references/pptxgenjs-jsx-shape-props.md)
+6. Chart-heavy decks: [references/pptxgenjs-jsx-chart-props.md](references/pptxgenjs-jsx-chart-props.md)
+7. Full upstream surface: [references/pptxgenjs-jsx-all-upstream-props.md](references/pptxgenjs-jsx-all-upstream-props.md)
+8. Machine-readable component list: [references/pptxgenjs-jsx-component-manifest.json](references/pptxgenjs-jsx-component-manifest.json)
 
-If the package is not installed locally, use the same files from the `artifact-kit/pptxgenjs-jsx` repository or npm package.
+If `node_modules/@artifact-kit/pptxgenjs-jsx` exists and may be newer than this skill, prefer its `llms.txt`, `docs/`, and `component-manifest.json` files after reading the skill workflow.
 
 ## Browser Inline JSX Pattern
 
