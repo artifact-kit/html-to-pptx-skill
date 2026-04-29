@@ -11,6 +11,7 @@ Use dedicated shape components when available. Use `<Shape shape="VALUE" ... />`
 - `Arc`
 - `BlockArc`
 - `PieShape`
+- `CustomGeometry`
 - `Triangle`
 - `RightTriangle`
 - `Diamond`
@@ -19,6 +20,56 @@ Use dedicated shape components when available. Use `<Shape shape="VALUE" ... />`
 - `Star`, `Star4`, `Star5`, `Star6`, `Star8`, `Star10`
 - `LeftArrow`, `RightArrow`, `UpArrow`, `DownArrow`, `LeftRightArrow`, `UpDownArrow`
 - `Chevron`, `Cloud`, `Heart`, `Donut`, `Plus`
+
+## Wrapper-Specific Shape Props
+
+### `RoundRectProps`
+
+Extends: `ShapeProps`.
+
+| Prop | Type | Comment |
+| :-- | :-- | :-- |
+| `rectRadius?` | `number` | Rounded rectangle radius. Valid only for `roundRect`; range 0.0 to 1.0. |
+
+### `ArcProps`
+
+Extends: `ShapeProps`.
+
+| Prop | Type | Comment |
+| :-- | :-- | :-- |
+| `angleRange?` | `[number, number]` | Arc angle range. Valid for `arc`, `pie`, and `blockArc`; range [0-359, 0-359]. |
+
+### `BlockArcProps`
+
+Extends: `ArcProps`.
+
+| Prop | Type | Comment |
+| :-- | :-- | :-- |
+| `arcThicknessRatio?` | `number` | Block arc thickness ratio. Valid only for `blockArc`; range 0.0 to 1.0. |
+
+### `CustomGeometryProps`
+
+Extends: `ShapeProps`.
+
+| Prop | Type | Comment |
+| :-- | :-- | :-- |
+| `points` | `CustomGeometryPoint[]` | Required custom geometry path points passed to PptxGenJS `custGeom`. Coordinates are local to the custom geometry box. |
+
+```ts
+type CustomGeometryPoint =
+  | { x: Coord; y: Coord; moveTo?: boolean }
+  | { x: Coord; y: Coord; curve: { type: "cubic"; x1: Coord; y1: Coord; x2: Coord; y2: Coord } }
+  | { x: Coord; y: Coord; curve: { type: "quadratic"; x1: Coord; y1: Coord } }
+  | { x: Coord; y: Coord; curve: { type: "arc"; hR: Coord; wR: Coord; stAng: number; swAng: number } }
+  | { close: true };
+```
+
+SVG conversion rule:
+
+1. Compute the source SVG element's absolute pixel box from DOM/CSS/source attributes.
+2. Convert the box to PPT inches with formulas: `x = inch(svgLeftPx + pathBBox.x)`, `y = inch(svgTopPx + pathBBox.y)`, `w = inch(pathBBox.width)`, `h = inch(pathBBox.height)`.
+3. Convert path coordinates into the custom geometry's local coordinate space by subtracting the path bounding box origin. For example SVG `M 140 40 L 180 60` with `pathBBox.x = 120`, `pathBBox.y = 30` becomes `[{ x: 20, y: 10, moveTo: true }, { x: 60, y: 30 }]`.
+4. Map SVG commands: `M` -> `moveTo`, `L/H/V` -> line points, `C` -> cubic curve, `Q` -> quadratic curve, `Z` -> `{ close: true }`. Use native `Line`, `Rect`, `Ellipse`, and arrow shapes for simpler primitives.
 
 ## Shape Type Alias
 

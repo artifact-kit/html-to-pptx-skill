@@ -36,6 +36,7 @@
 | `Arc` | `slide.addShape('arc')` | Arc shape; supports angleRange. | `ArcProps` |
 | `BlockArc` | `slide.addShape('blockArc')` | Thick arc; supports angleRange and arcThicknessRatio. | `BlockArcProps` |
 | `PieShape` | `slide.addShape('pie')` | Pie-slice shape; not a data chart. | `PieShapeProps` |
+| `CustomGeometry` | `slide.addShape('custGeom')` | Editable custom path geometry, especially SVG path primitives converted to PowerPoint points. | `CustomGeometryProps` |
 | `Triangle` | `slide.addShape('triangle')` | Triangle shape. | `TriangleProps` |
 | `RightTriangle` | `slide.addShape('rtTriangle')` | Right triangle. | `TriangleProps` |
 | `Diamond` | `slide.addShape('diamond')` | Diamond shape. | `DiamondProps` |

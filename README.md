@@ -2,12 +2,12 @@
 
 Teach an agent to turn HTML pages into downloadable PowerPoint decks with [`@artifact-kit/pptxgenjs-jsx`](https://github.com/artifact-kit/pptxgenjs-jsx).
 
-The first version is intentionally simple: understand each HTML page or section, write inline JSX that declares a native PPTX tree, then download the deck in the browser. It does not measure the DOM, render canvas, or screenshot the page.
+The first version is intentionally direct: understand each HTML page or section, derive layout from the source HTML/CSS/SVG where possible, write inline JSX that declares a native PPTX tree, then download the deck in the browser. It does not screenshot the page by default.
 
 ## What It Does
 
 - Converts web pages, dashboards, reports, or slide-like HTML into `.pptx` files.
-- Uses semantic PowerPoint objects: text boxes, shapes, lines, tables, images, and charts.
+- Uses semantic PowerPoint objects: text boxes, shapes, SVG-derived geometry, lines, tables, images, and charts.
 - Runs as a local browser workflow with Babel Standalone and CDN imports.
 - Includes vendored component and props docs so agents can use the wrapper without guessing.
 - Keeps the core skill short while linking to deeper references only when needed.
@@ -65,7 +65,7 @@ Open:
 http://127.0.0.1:4178/examples/generated/attention-pptx-export.html
 ```
 
-Click **Download attention-mechanism.pptx**. The generated PPTX recreates the input slide as native PowerPoint content: selectable text, shape panels, arrowed flow lines, a heatmap built from PPT rectangles, and a native line chart from structured data.
+Click **Download attention-mechanism.pptx**. The generated PPTX recreates the input slide as native PowerPoint content: selectable text, shape panels, SVG-derived primitive shapes, `CustomGeometry` path geometry, arrowed flow lines, a heatmap built from PPT rectangles, and a native line chart from structured data.
 
 ## How Agents Should Use It
 
@@ -84,11 +84,12 @@ When a user asks to convert HTML to PPTX:
 
 ## Design Positioning
 
-This skill is not a pixel clone pipeline. It is a production-flow bridge for agents:
+This skill is not a screenshot pipeline. It is a production-flow bridge for agents:
 
 - HTML gives the agent the visual and content reference.
+- Source HTML/CSS/SVG gives the agent measurable layout constants.
 - JSX gives the agent a structured PowerPoint declaration language.
 - `@artifact-kit/pptxgenjs-jsx` gives the agent access to PptxGenJS without imperative command ordering.
 - The final `.pptx` remains editable, searchable, and reusable.
 
-Future versions can add DOM measurement, `snapdom` screenshot fallbacks, and richer asset extraction. Version one stays deterministic and easy to reason about.
+Future versions can add stronger DOM measurement, `snapdom` screenshot fallbacks, and richer asset extraction. Version one stays deterministic and easy to reason about.

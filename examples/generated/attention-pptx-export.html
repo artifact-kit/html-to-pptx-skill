@@ -224,6 +224,7 @@
         LineChart,
         Rect,
         RoundRect,
+        Shape,
         Slide,
         Text,
         TextRun,
@@ -231,6 +232,8 @@
         renderPptx,
         validateDeck,
       } = window.ArtifactKitPptxGenJsx;
+
+      const CustomGeometryComponent = window.ArtifactKitPptxGenJsx.CustomGeometry;
 
       const C = {
         ink: "0F172A",
@@ -249,42 +252,160 @@
       const status = document.querySelector("#status");
       const button = document.querySelector("#download");
 
-      function panel(x, y, w, height, fill = "FFFFFF") {
-        return <RoundRect x={x} y={y} w={w} h={height} rectRadius={0.06} fill={{ color: fill, transparency: 5 }} line={{ color: "CBD5E1", width: 1 }} />;
+      const PX_PER_IN = 120;
+      const inch = (px) => px / PX_PER_IN;
+      const slidePx = { w: 1600, h: 900 };
+      const layout = { name: "SRC_1600_900", width: inch(slidePx.w), height: inch(slidePx.h) };
+      const pptBox = ({ x, y, w, h }) => ({ x: inch(x), y: inch(y), w: inch(w), h: inch(h) });
+      const pt = (px) => px * 0.75;
+
+      const source = {
+        header: { x: 40, y: 28, w: 1520, h: 126 },
+        mainLeft: { x: 40, y: 170, w: 1124, h: 454 },
+        svgMain: { x: 52, y: 220, w: 774, h: 315, viewBox: { x: 0, y: 0, w: 1040, h: 390 } },
+        explain: { x: 842, y: 220, w: 310, h: 315 },
+        multiHead: { x: 40, y: 640, w: 540, h: 82 },
+        mask: { x: 600, y: 640, w: 560, h: 82 },
+        matrixPanel: { x: 1180, y: 170, w: 380, h: 250 },
+        chartPanel: { x: 1180, y: 440, w: 380, h: 250 },
+        footer: { x: 40, y: 732, w: 1520, h: 120 },
+      };
+
+      function Panel({ box, fill = C.white, children }) {
+        return (
+          <Fragment>
+            <RoundRect {...pptBox(box)} rectRadius={0.025} fill={{ color: fill, transparency: 8 }} line={{ color: "CBD5E1", width: 0.8 }} />
+            {children}
+          </Fragment>
+        );
       }
 
-      function label(text, x, y, w, color = C.navy) {
-        return <Text x={x} y={y} w={w} h={0.18} fontSize={7.6} bold color={color} margin={0}>{text}</Text>;
+      function TextBox({ box, children, fontSize = 13, color = C.ink, bold = false, margin = 0, ...props }) {
+        return (
+          <Text {...pptBox(box)} fontSize={fontSize} color={color} bold={bold} margin={margin} fit="shrink" {...props}>
+            {children}
+          </Text>
+        );
       }
 
-      function flow(x1, y1, x2, y2, color = C.navy) {
-        return <Line x={x1} y={y1} w={x2 - x1} h={y2 - y1} line={{ color, width: 1.15, beginArrowType: "none", endArrowType: "triangle" }} />;
+      function CustomPath(props) {
+        if (CustomGeometryComponent) return pptxElement(CustomGeometryComponent, props);
+        return pptxElement(Shape, { ...props, shape: "custGeom" });
+      }
+
+      function svgScaleX(svg) {
+        return svg.w / svg.viewBox.w;
+      }
+
+      function svgScaleY(svg) {
+        return svg.h / svg.viewBox.h;
+      }
+
+      function svgAbs(svg, point) {
+        return {
+          x: svg.x + (point.x - svg.viewBox.x) * svgScaleX(svg),
+          y: svg.y + (point.y - svg.viewBox.y) * svgScaleY(svg),
+        };
+      }
+
+      function svgBox(svg, box) {
+        const topLeft = svgAbs(svg, box);
+        return pptBox({
+          x: topLeft.x,
+          y: topLeft.y,
+          w: box.w * svgScaleX(svg),
+          h: box.h * svgScaleY(svg),
+        });
+      }
+
+      function SvgRect({ svg, box, rx = 0, fill, stroke, strokeWidth = 1, dash, transparency = 0 }) {
+        const Component = rx > 0 ? RoundRect : Rect;
+        return (
+          <Component
+            {...svgBox(svg, box)}
+            rectRadius={rx > 0 ? Math.min(0.1, rx / Math.max(box.w, box.h)) : undefined}
+            fill={{ color: fill, transparency }}
+            line={{ color: stroke || fill, width: strokeWidth, dash }}
+          />
+        );
+      }
+
+      function SvgLine({ svg, from, to, color = C.navy, width = 1.2, arrow = true }) {
+        const start = svgAbs(svg, from);
+        const end = svgAbs(svg, to);
+        return (
+          <Line
+            x={inch(start.x)}
+            y={inch(start.y)}
+            w={inch(end.x - start.x)}
+            h={inch(end.y - start.y)}
+            line={{ color, width, beginArrowType: "none", endArrowType: arrow ? "triangle" : "none" }}
+          />
+        );
+      }
+
+      function SvgText({ svg, x, y, w, text, size = 14, color = C.ink, bold = false, align = "center" }) {
+        const topLeft = svgAbs(svg, { x, y });
+        const fontSize = Math.max(4.5, pt(size * svgScaleX(svg)));
+        return (
+          <Text
+            x={inch(topLeft.x)}
+            y={inch(topLeft.y - size * svgScaleY(svg))}
+            w={inch(w * svgScaleX(svg))}
+            h={inch(size * 1.35 * svgScaleY(svg))}
+            fontSize={fontSize}
+            bold={bold}
+            color={color}
+            align={align}
+            margin={0}
+            fit="shrink"
+          >
+            {text}
+          </Text>
+        );
+      }
+
+      function SvgArrowMarker({ svg, tip }) {
+        const markerPathFromSvgDefs = {
+          box: { x: tip.x - 10, y: tip.y - 5, w: 10, h: 10 },
+          points: [
+            { x: 0, y: 0, moveTo: true },
+            { x: 10, y: 5 },
+            { x: 0, y: 10 },
+            { close: true },
+          ],
+        };
+        return (
+          <CustomPath
+            {...svgBox(svg, markerPathFromSvgDefs.box)}
+            points={markerPathFromSvgDefs.points}
+            fill={{ color: C.navy }}
+            line={{ color: C.navy, transparency: 100 }}
+          />
+        );
       }
 
       function hexByte(value) {
         return Math.max(0, Math.min(255, value)).toString(16).padStart(2, "0").toUpperCase();
       }
 
-      function processBox(title, subtitle, x, y, w, fill, line) {
+      function SvgProcessBox({ svg, title, subtitle, box, fill, stroke }) {
         return (
           <Fragment>
-            <RoundRect x={x} y={y} w={w} h={0.46} rectRadius={0.05} fill={{ color: fill }} line={{ color: line, width: 1 }} />
-            <Text x={x + 0.08} y={y + 0.1} w={w - 0.16} h={0.12} fontSize={7.8} bold color={C.ink} align="center" margin={0}>{title}</Text>
-            <Text x={x + 0.08} y={y + 0.27} w={w - 0.16} h={0.11} fontSize={5.6} color={C.slate} align="center" margin={0}>{subtitle}</Text>
+            <SvgRect svg={svg} box={box} rx={9} fill={fill} stroke={stroke} />
+            <SvgText svg={svg} x={box.x + 8} y={box.y + 24} w={box.w - 16} text={title} size={14} bold />
+            {subtitle ? <SvgText svg={svg} x={box.x + 8} y={box.y + 42} w={box.w - 16} text={subtitle} size={11} color="475569" /> : null}
           </Fragment>
         );
       }
 
-      function miniMatrix(x, y, color) {
+      function SvgMiniMatrix({ svg, box, color }) {
         const cells = [];
         for (let row = 0; row < 5; row += 1) {
           for (let col = 0; col < 3; col += 1) {
             cells.push(
               <Rect
-                x={x + col * 0.11}
-                y={y + row * 0.075}
-                w={0.11}
-                h={0.075}
+                {...svgBox(svg, { x: box.x + col * (box.w / 3), y: box.y + row * (box.h / 5), w: box.w / 3, h: box.h / 5 })}
                 fill={{ color: row === col || col === 1 ? color : "F8FAFC", transparency: row === col ? 0 : 18 }}
                 line={{ color, transparency: 35, width: 0.25 }}
               />
@@ -294,7 +415,7 @@
         return <Fragment>{cells}</Fragment>;
       }
 
-      function heatmap(x, y) {
+      function Heatmap({ box }) {
         const values = [
           [0.95, 0.28, 0.14, 0.08, 0.18, 0.12, 0.09, 0.06],
           [0.24, 0.88, 0.34, 0.10, 0.13, 0.20, 0.09, 0.05],
@@ -305,9 +426,10 @@
           [0.07, 0.09, 0.13, 0.19, 0.16, 0.40, 0.82, 0.49],
           [0.05, 0.07, 0.09, 0.13, 0.12, 0.24, 0.44, 0.94],
         ];
+        const cell = box.w / 8;
         return (
           <Fragment>
-            <Text x={x + 0.55} y={y} w={1.05} h={0.12} fontSize={5.3} bold color="334155" align="center" margin={0}>key position j</Text>
+            <TextBox box={{ x: box.x, y: box.y - 18, w: box.w, h: 14 }} fontSize={7} bold color="334155" align="center">key position j</TextBox>
             {values.map((row, r) =>
               row.map((value, c) => {
                 const red = Math.round(226 - value * 105);
@@ -315,18 +437,72 @@
                 const blue = Math.round(255 - value * 75);
                 return (
                   <Rect
-                    x={x + 0.38 + c * 0.18}
-                    y={y + 0.24 + r * 0.18}
-                    w={0.18}
-                    h={0.18}
+                    {...pptBox({ x: box.x + c * cell, y: box.y + r * cell, w: cell, h: cell })}
                     fill={{ color: `${hexByte(red)}${hexByte(green)}${hexByte(blue)}` }}
                     line={{ color: "FFFFFF", width: 0.2 }}
                   />
                 );
               })
             )}
-            <Rect x={x + 0.38} y={y + 0.24} w={1.44} h={1.44} fill={{ color: "FFFFFF", transparency: 100 }} line={{ color: "334155", width: 0.7 }} />
-            <Text x={x + 0.5} y={y + 1.8} w={1.2} h={0.14} fontSize={5.2} color={C.slate} align="center" margin={0}>attention strength</Text>
+            <Rect {...pptBox(box)} fill={{ color: "FFFFFF", transparency: 100 }} line={{ color: "334155", width: 0.7 }} />
+            <TextBox box={{ x: box.x, y: box.y + box.h + 10, w: box.w, h: 14 }} fontSize={6.5} color={C.slate} align="center">attention strength</TextBox>
+          </Fragment>
+        );
+      }
+
+      function MainAttentionSvg() {
+        const svg = source.svgMain;
+        return (
+          <Fragment>
+            <SvgText svg={svg} x={20} y={34} w={180} text="Linear projections" size={16} color={C.navy} bold align="left" />
+            <SvgText svg={svg} x={20} y={58} w={130} text="input token states" size={11} color="475569" align="left" />
+            <SvgText svg={svg} x={28} y={87} w={54} text="X" size={14} bold />
+            <SvgRect svg={svg} box={{ x: 28, y: 96, w: 54, h: 90 }} fill="E8F4FF" stroke="5B91C8" />
+            <SvgMiniMatrix svg={svg} box={{ x: 28, y: 96, w: 54, h: 90 }} color="5B91C8" />
+            <SvgLine svg={svg} from={{ x: 82, y: 142 }} to={{ x: 135, y: 142 }} />
+            <SvgLine svg={svg} from={{ x: 135, y: 142 }} to={{ x: 170, y: 80 }} />
+            <SvgLine svg={svg} from={{ x: 135, y: 142 }} to={{ x: 170, y: 142 }} />
+            <SvgLine svg={svg} from={{ x: 135, y: 142 }} to={{ x: 170, y: 204 }} />
+
+            <SvgProcessBox svg={svg} title="Query map" subtitle="query projection" box={{ x: 174, y: 54, w: 120, h: 48 }} fill={C.violet} stroke="8B5BB2" />
+            <SvgProcessBox svg={svg} title="Key map" subtitle="key projection" box={{ x: 174, y: 116, w: 120, h: 48 }} fill={C.amber} stroke="C89012" />
+            <SvgProcessBox svg={svg} title="Value map" subtitle="value projection" box={{ x: 174, y: 178, w: 120, h: 48 }} fill={C.green} stroke="609956" />
+            <SvgLine svg={svg} from={{ x: 294, y: 78 }} to={{ x: 330, y: 78 }} />
+            <SvgLine svg={svg} from={{ x: 294, y: 140 }} to={{ x: 330, y: 140 }} />
+            <SvgLine svg={svg} from={{ x: 294, y: 202 }} to={{ x: 330, y: 202 }} />
+            <SvgText svg={svg} x={330} y={31} w={48} text="Q" size={14} color="6D28D9" bold />
+            <SvgText svg={svg} x={330} y={116} w={48} text="K" size={14} color="A16207" bold />
+            <SvgText svg={svg} x={330} y={201} w={48} text="V" size={14} color="166534" bold />
+            <SvgMiniMatrix svg={svg} box={{ x: 330, y: 40, w: 48, h: 80 }} color="8B5BB2" />
+            <SvgMiniMatrix svg={svg} box={{ x: 330, y: 125, w: 48, h: 80 }} color="C89012" />
+            <SvgMiniMatrix svg={svg} box={{ x: 330, y: 210, w: 48, h: 80 }} color="609956" />
+
+            <SvgRect svg={svg} box={{ x: 415, y: 28, w: 430, h: 270 }} rx={18} fill="FFFFFF" stroke="2563EB" transparency={100} dash="dash" strokeWidth={1.2} />
+            <SvgText svg={svg} x={435} y={58} w={300} text="Scaled dot-product attention" size={16} color={C.navy} bold align="left" />
+            <SvgLine svg={svg} from={{ x: 378, y: 80 }} to={{ x: 430, y: 96 }} />
+            <SvgLine svg={svg} from={{ x: 378, y: 165 }} to={{ x: 430, y: 104 }} />
+            <SvgProcessBox svg={svg} title="Similarity" subtitle="token pairs" box={{ x: 432, y: 78, w: 70, h: 58 }} fill={C.violet} stroke="8B5BB2" />
+            <SvgLine svg={svg} from={{ x: 502, y: 107 }} to={{ x: 548, y: 107 }} />
+            <SvgProcessBox svg={svg} title="Scale" subtitle="stabilize" box={{ x: 552, y: 78, w: 70, h: 58 }} fill={C.rose} stroke="D35C54" />
+            <SvgLine svg={svg} from={{ x: 622, y: 107 }} to={{ x: 668, y: 107 }} />
+            <SvgProcessBox svg={svg} title="Mask" subtitle="hide invalid" box={{ x: 672, y: 70, w: 76, h: 74 }} fill={C.white} stroke="64748B" />
+            <SvgLine svg={svg} from={{ x: 748, y: 107 }} to={{ x: 795, y: 107 }} />
+            <SvgProcessBox svg={svg} title="Softmax" subtitle="row weights" box={{ x: 798, y: 78, w: 78, h: 58 }} fill={C.amber} stroke="C89012" />
+            <SvgLine svg={svg} from={{ x: 876, y: 107 }} to={{ x: 926, y: 107 }} />
+            <SvgProcessBox svg={svg} title="Weighted" subtitle="values" box={{ x: 930, y: 78, w: 72, h: 58 }} fill={C.green} stroke="609956" />
+            <SvgLine svg={svg} from={{ x: 1002, y: 107 }} to={{ x: 1024, y: 107 }} />
+            <SvgArrowMarker svg={svg} tip={{ x: 1024, y: 107 }} />
+            <SvgLine svg={svg} from={{ x: 378, y: 250 }} to={{ x: 922, y: 130 }} color="609956" />
+            <SvgRect svg={svg} box={{ x: 475, y: 196, w: 300, h: 54 }} rx={8} fill="F8FBFF" stroke="93B2DC" />
+            <SvgText svg={svg} x={492} y={221} w={266} text="scores become a distribution over source tokens" size={16} bold />
+
+            <SvgText svg={svg} x={860} y={168} w={190} text="Encoder context" size={16} color={C.navy} bold align="left" />
+            <SvgProcessBox svg={svg} title="Add & Norm" subtitle="" box={{ x: 875, y: 190, w: 94, h: 34 }} fill="EFF6FF" stroke="7BA3D7" />
+            <SvgProcessBox svg={svg} title="Position-wise" subtitle="FFN + GELU" box={{ x: 860, y: 246, w: 124, h: 62 }} fill="EAF4FF" stroke="4F83C7" />
+            <SvgProcessBox svg={svg} title="Add & Norm" subtitle="" box={{ x: 875, y: 335, w: 94, h: 34 }} fill="EFF6FF" stroke="7BA3D7" />
+            <SvgLine svg={svg} from={{ x: 938, y: 335 }} to={{ x: 938, y: 308 }} />
+            <SvgLine svg={svg} from={{ x: 938, y: 246 }} to={{ x: 938, y: 224 }} />
+            <SvgLine svg={svg} from={{ x: 938, y: 190 }} to={{ x: 938, y: 150 }} />
           </Fragment>
         );
       }
@@ -342,96 +518,75 @@
           title="Attention Mechanism Structure"
           author="artifact-kit"
           subject="HTML recreated as native PowerPoint with @artifact-kit/pptxgenjs-jsx"
-          layout={{ name: "WIDE", width: 13.333, height: 7.5 }}
+          layout={layout}
           theme={{ headFontFace: "Arial", bodyFontFace: "Arial", lang: "zh-CN" }}
         >
           <Slide background={{ color: C.paper }}>
-            <Rect x={0} y={0} w={13.333} h={7.5} fill={{ color: C.paper }} line={{ color: C.paper, transparency: 100 }} />
-            <Rect x={0} y={0} w={13.333} h={0.12} fill={{ color: C.navy }} line={{ color: C.navy, transparency: 100 }} />
-            <Text x={0.58} y={0.33} w={5.2} h={0.18} fontSize={8.6} bold color={C.cobalt} margin={0}>TRANSFORMER ARCHITECTURE LECTURE</Text>
-            <Text x={0.58} y={0.55} w={7.8} h={0.5} fontSize={28} bold color={C.navy} margin={0}>Attention 机制：结构与计算图</Text>
-            <Text x={0.6} y={1.03} w={6.9} h={0.26} fontSize={13.3} italic color="475569" margin={0}>Scaled dot-product attention as differentiable content-addressed retrieval</Text>
+            <Rect {...pptBox({ x: 0, y: 0, w: slidePx.w, h: slidePx.h })} fill={{ color: C.paper }} line={{ color: C.paper, transparency: 100 }} />
+            <Rect {...pptBox({ x: 0, y: 0, w: slidePx.w, h: 12 })} fill={{ color: C.navy }} line={{ color: C.navy, transparency: 100 }} />
+            <TextBox box={{ x: 40, y: 48, w: 560, h: 18 }} fontSize={9.4} bold color={C.cobalt}>TRANSFORMER ARCHITECTURE LECTURE</TextBox>
+            <TextBox box={{ x: 40, y: 72, w: 850, h: 58 }} fontSize={37.5} bold color={C.navy}>Attention 机制：结构与计算图</TextBox>
+            <TextBox box={{ x: 40, y: 132, w: 760, h: 28 }} fontSize={18} italic color="475569">Scaled dot-product attention as differentiable content-addressed retrieval</TextBox>
+            <Line x={inch(40)} y={inch(154)} w={inch(1520)} h={0} line={{ color: C.navy, width: 2 }} />
+            <Line x={inch(1190)} y={inch(42)} w={0} h={inch(94)} line={{ color: "CBD5E1", width: 0.8 }} />
+            <TextBox box={{ x: 1210, y: 48, w: 240, h: 22 }} fontSize={12.75} bold color={C.navy}>Learning Targets</TextBox>
+            <TextBox box={{ x: 1210, y: 78, w: 310, h: 58 }} fontSize={10.5} color="475569" breakLine={false}>
+              <TextRun text="• 把 query-key 匹配理解为 token-token 相似度矩阵" options={{ breakLine: true }} />
+              <TextRun text="• 解释缩放、mask 与 softmax 的作用" options={{ breakLine: true }} />
+              <TextRun text="• 说明 multi-head 如何并行学习不同关系子空间" />
+            </TextBox>
 
-            {panel(8.82, 0.32, 3.88, 1.03)}
-            <Text x={9.1} y={0.49} w={2.9} h={0.17} fontSize={8.2} bold color={C.navy} margin={0}>Learning Targets</Text>
-            <Text x={9.1} y={0.73} w={3.16} h={0.42} fontSize={6.7} color="475569" breakLine={false} fit="shrink" margin={0.02}>
-              <TextRun text="• token-token 相似度矩阵" options={{ breakLine: true }} />
-              <TextRun text="• 缩放、mask 与 softmax" options={{ breakLine: true }} />
-              <TextRun text="• multi-head 的关系子空间" />
-            </Text>
+            <Panel box={source.mainLeft}>
+              <TextBox box={{ x: 64, y: 188, w: 520, h: 26 }} fontSize={12.75} bold color={C.navy}>1  Attention 计算结构：从嵌入到上下文向量</TextBox>
+              <MainAttentionSvg />
+              <RoundRect {...pptBox({ x: source.explain.x, y: source.explain.y, w: source.explain.w, h: 86 })} rectRadius={0.02} fill={{ color: "EFF6FF", transparency: 15 }} line={{ color: "BFDBFE", width: 0.7 }} />
+              <TextBox box={{ x: source.explain.x + 14, y: source.explain.y + 12, w: 250, h: 18 }} fontSize={9.5} bold color={C.navy}>三类投影</TextBox>
+              <TextBox box={{ x: source.explain.x + 14, y: source.explain.y + 36, w: 270, h: 38 }} fontSize={9.5} color="475569">Query 负责发起检索，Key 负责被匹配，Value 承载最终被汇聚的信息。</TextBox>
+              <RoundRect {...pptBox({ x: source.explain.x, y: source.explain.y + 104, w: source.explain.w, h: 94 })} rectRadius={0.02} fill={{ color: "EFF6FF", transparency: 15 }} line={{ color: "BFDBFE", width: 0.7 }} />
+              <TextBox box={{ x: source.explain.x + 14, y: source.explain.y + 116, w: 250, h: 18 }} fontSize={9.5} bold color={C.navy}>分布化选择</TextBox>
+              <TextBox box={{ x: source.explain.x + 14, y: source.explain.y + 140, w: 270, h: 46 }} fontSize={9.5} color="475569">相似度分数经过缩放、mask 和 softmax，变成每个 token 对其它 token 的注意力分布。</TextBox>
+              <RoundRect {...pptBox({ x: source.explain.x, y: source.explain.y + 216, w: source.explain.w, h: 78 })} rectRadius={0.02} fill={{ color: "FEF3C7", transparency: 10 }} line={{ color: "FDE68A", width: 0.7 }} />
+              <TextBox box={{ x: source.explain.x + 14, y: source.explain.y + 230, w: 270, h: 44 }} fontSize={9.5} color="475569">
+                <TextRun text="解释：" options={{ bold: true, color: C.navy }} />
+                <TextRun text="每一行表示一个 query 如何从所有 value 中取信息；颜色更深代表信息汇聚权重更高。" />
+              </TextBox>
+            </Panel>
 
-            {panel(0.48, 1.45, 8.45, 4.78)}
-            <Text x={0.75} y={1.67} w={4.3} h={0.2} fontSize={10.2} bold color={C.navy} margin={0}>1  Attention 计算结构：从嵌入到上下文向量</Text>
-            <Text x={0.75} y={2.05} w={0.55} h={0.16} fontSize={8} bold color={C.ink} align="center" margin={0}>X</Text>
-            {miniMatrix(0.75, 2.22, "5B91C8")}
-            {flow(1.25, 2.43, 1.85, 2.43)}
-            {flow(1.85, 2.43, 2.35, 2.05)}
-            {flow(1.85, 2.43, 2.35, 2.43)}
-            {flow(1.85, 2.43, 2.35, 2.81)}
-            {processBox("Query map", "query projection", 2.35, 1.82, 1.15, C.violet, "8B5BB2")}
-            {processBox("Key map", "key projection", 2.35, 2.28, 1.15, C.amber, "C89012")}
-            {processBox("Value map", "value projection", 2.35, 2.74, 1.15, C.green, "609956")}
-            {flow(3.5, 2.05, 3.88, 2.05)}
-            {flow(3.5, 2.51, 3.88, 2.51)}
-            {flow(3.5, 2.97, 3.88, 2.97)}
-            {label("Q", 3.9, 1.75, 0.36, "6D28D9")}
-            {miniMatrix(3.88, 1.9, "8B5BB2")}
-            {label("K", 3.9, 2.33, 0.36, "A16207")}
-            {miniMatrix(3.88, 2.48, "C89012")}
-            {label("V", 3.9, 2.91, 0.36, "166534")}
-            {miniMatrix(3.88, 3.06, "609956")}
+            <Panel box={source.multiHead}>
+              <TextBox box={{ x: source.multiHead.x + 22, y: source.multiHead.y + 15, w: 220, h: 20 }} fontSize={11.25} bold color={C.navy}>2  Multi-Head Attention</TextBox>
+              <TextBox box={{ x: source.multiHead.x + 22, y: source.multiHead.y + 44, w: 290, h: 20 }} fontSize={8.8} color="475569">多个 head 并行读取局部邻近、长程依赖、句法角色或指代线索。</TextBox>
+              <RoundRect {...pptBox({ x: source.multiHead.x + 328, y: source.multiHead.y + 20, w: 96, h: 36 })} rectRadius={0.02} fill={{ color: C.violet }} line={{ color: "94A3B8", width: 0.7 }} />
+              <TextBox box={{ x: source.multiHead.x + 338, y: source.multiHead.y + 30, w: 76, h: 14 }} fontSize={7.5} bold align="center">projection set</TextBox>
+              <Line x={inch(source.multiHead.x + 424)} y={inch(source.multiHead.y + 38)} w={inch(42)} h={0} line={{ color: C.navy, width: 1, endArrowType: "triangle" }} />
+              <RoundRect {...pptBox({ x: source.multiHead.x + 466, y: source.multiHead.y + 20, w: 80, h: 36 })} rectRadius={0.02} fill={{ color: "EFF6FF" }} line={{ color: "7BA3D7", width: 0.7 }} />
+              <TextBox box={{ x: source.multiHead.x + 474, y: source.multiHead.y + 30, w: 64, h: 14 }} fontSize={7.5} bold align="center">head 1</TextBox>
+            </Panel>
 
-            <RoundRect x={4.62} y={1.75} w={3.85} h={2.22} rectRadius={0.1} fill={{ color: "FFFFFF", transparency: 100 }} line={{ color: "2563EB", width: 1.15, dash: "dash" }} />
-            <Text x={4.82} y={1.93} w={2.3} h={0.18} fontSize={10.1} bold color={C.navy} margin={0}>Scaled dot-product attention</Text>
-            {flow(4.25, 2.15, 4.78, 2.32)}
-            {flow(4.25, 2.72, 4.78, 2.4)}
-            {processBox("Similarity", "token pairs", 4.82, 2.2, 0.82, C.violet, "8B5BB2")}
-            {flow(5.64, 2.43, 6.06, 2.43)}
-            {processBox("Scale", "stabilize", 6.08, 2.2, 0.7, C.rose, "D35C54")}
-            {flow(6.78, 2.43, 7.14, 2.43)}
-            {processBox("Mask", "hide invalid", 7.16, 2.2, 0.68, C.white, "64748B")}
-            {flow(7.84, 2.43, 8.24, 2.43)}
-            {processBox("Softmax", "row weights", 8.26, 2.2, 0.84, C.amber, "C89012")}
-            {flow(9.1, 2.43, 9.53, 2.43)}
-            {processBox("Weighted", "values", 9.55, 2.2, 0.86, C.green, "609956")}
-            {flow(4.23, 3.22, 9.55, 2.66, "609956")}
-            <RoundRect x={5.02} y={3.22} w={2.84} h={0.46} rectRadius={0.05} fill={{ color: "F8FBFF" }} line={{ color: "93B2DC", width: 0.8 }} />
-            <Text x={5.22} y={3.35} w={2.45} h={0.12} fontSize={6.5} bold color={C.ink} align="center" margin={0}>scores become a distribution over source tokens</Text>
+            <Panel box={source.mask}>
+              <TextBox box={{ x: source.mask.x + 20, y: source.mask.y + 15, w: 180, h: 20 }} fontSize={11.25} bold color={C.navy}>3  Mask 与归一化</TextBox>
+              {[0, 1, 2, 3, 4].map((row) =>
+                [0, 1, 2, 3, 4].map((col) => (
+                  <Rect
+                    {...pptBox({ x: source.mask.x + 230 + col * 18, y: source.mask.y + 16 + row * 12, w: 18, h: 12 })}
+                    fill={{ color: col <= row ? "E0F2FE" : "F8FAFC" }}
+                    line={{ color: "94A3B8", width: 0.25 }}
+                  />
+                ))
+              )}
+              <TextBox box={{ x: source.mask.x + 350, y: source.mask.y + 18, w: 170, h: 48 }} fontSize={9.2} color="475569">Padding mask 屏蔽无效 token；causal mask 只允许访问过去位置。</TextBox>
+            </Panel>
 
-            <Text x={6.0} y={4.1} w={2.35} h={0.17} fontSize={8.6} bold color={C.navy} margin={0}>Encoder context</Text>
-            {processBox("Add & Norm", "", 6.1, 4.35, 1.05, "EFF6FF", "7BA3D7")}
-            {processBox("Position-wise", "FFN + GELU", 6.0, 4.88, 1.28, "EAF4FF", "4F83C7")}
-            {processBox("Add & Norm", "", 6.1, 5.58, 1.05, "EFF6FF", "7BA3D7")}
-            {flow(6.62, 5.58, 6.62, 5.34)}
-            {flow(6.62, 4.88, 6.62, 4.8)}
+            <Panel box={source.matrixPanel}>
+              <TextBox box={{ x: source.matrixPanel.x + 24, y: source.matrixPanel.y + 18, w: 250, h: 22 }} fontSize={11.25} bold color={C.navy}>4  Example Attention Matrix</TextBox>
+              <Heatmap box={{ x: source.matrixPanel.x + 70, y: source.matrixPanel.y + 68, w: 144, h: 144 }} />
+              <TextBox box={{ x: source.matrixPanel.x + 230, y: source.matrixPanel.y + 78, w: 120, h: 62 }} fontSize={8.5} color="475569">深色代表更强的连接；局部块状结构常对应短语、句法或共指关系。</TextBox>
+            </Panel>
 
-            <RoundRect x={7.48} y={4.32} w={1.18} h={0.42} rectRadius={0.05} fill={{ color: "FEF3C7" }} line={{ color: "F59E0B", width: 0.7 }} />
-            <Text x={7.58} y={4.46} w={0.96} h={0.1} fontSize={5.8} bold color={C.navy} align="center" margin={0}>context vector</Text>
-            {flow(7.15, 4.55, 7.48, 4.55)}
-
-            {panel(0.48, 6.38, 3.95, 0.72)}
-            <Text x={0.7} y={6.52} w={0.55} h={0.16} fontSize={8.4} bold color={C.navy} margin={0}>2</Text>
-            <Text x={1.0} y={6.52} w={1.75} h={0.16} fontSize={8.4} bold color={C.navy} margin={0}>Multi-Head Attention</Text>
-            <Text x={1.0} y={6.76} w={2.95} h={0.15} fontSize={6.3} color="475569" margin={0}>多个 head 并行读取局部邻近、长程依赖、句法角色或指代线索。</Text>
-            {processBox("projection set 1", "", 4.72, 6.42, 0.92, C.violet, "94A3B8")}
-            {processBox("head 1", "", 5.9, 6.42, 0.88, "EFF6FF", "7BA3D7")}
-            {processBox("Concat", "output mix", 7.12, 6.42, 0.82, C.rose, "D35C54")}
-            {flow(5.64, 6.65, 5.9, 6.65)}
-            {flow(6.78, 6.65, 7.12, 6.65)}
-
-            {panel(9.15, 1.45, 3.72, 2.0)}
-            <Text x={9.4} y={1.67} w={2.3} h={0.18} fontSize={9.1} bold color={C.navy} margin={0}>4  Example Attention Matrix</Text>
-            {heatmap(9.48, 1.91)}
-            <Text x={11.15} y={2.55} w={1.15} h={0.4} fontSize={6.2} color="475569" margin={0}>深色代表更强的连接；局部块状结构常对应短语、句法或共指关系。</Text>
-
-            {panel(9.15, 3.68, 3.72, 2.22)}
-            <Text x={9.4} y={3.9} w={2.1} h={0.18} fontSize={9.1} bold color={C.navy} margin={0}>5  Complexity Scaling</Text>
+            <Panel box={source.chartPanel}>
+              <TextBox box={{ x: source.chartPanel.x + 24, y: source.chartPanel.y + 18, w: 230, h: 22 }} fontSize={11.25} bold color={C.navy}>5  Complexity Scaling</TextBox>
             <LineChart
               data={complexityData}
-              x={9.38}
-              y={4.23}
-              w={2.85}
-              h={1.18}
+              {...pptBox({ x: source.chartPanel.x + 34, y: source.chartPanel.y + 62, w: 306, h: 142 })}
               showLegend
               legendPos="t"
               showValue={false}
@@ -443,13 +598,19 @@
               lineSize={1.5}
               markerSize={3}
             />
-            <Text x={9.45} y={5.55} w={2.9} h={0.16} fontSize={6.2} color="475569" margin={0}>标准 attention 需要比较所有 token 对；长上下文下连接数量快速增长。</Text>
+              <TextBox box={{ x: source.chartPanel.x + 24, y: source.chartPanel.y + 210, w: 320, h: 24 }} fontSize={8.5} color="475569">标准 attention 需要比较所有 token 对；长上下文下连接数量快速增长。</TextBox>
+            </Panel>
 
-            {panel(9.15, 6.16, 3.72, 0.94)}
-            <Text x={9.38} y={6.32} w={0.9} h={0.14} fontSize={7.4} bold color={C.navy} margin={0}>稳定性</Text>
-            <Text x={9.38} y={6.56} w={3.04} h={0.28} fontSize={6.2} color="475569" margin={0}>缩放避免分数过大，mask 控制可见范围，残差和 LayerNorm 保持深层网络训练稳定。</Text>
-
-            <Text x={0.58} y={7.22} w={5.9} h={0.12} fontSize={5.8} color="64748B" margin={0}>Created from HTML with @artifact-kit/pptxgenjs-jsx: semantic text, shapes, lines, heatmap cells, and native chart data.</Text>
+            <Line x={inch(source.footer.x)} y={inch(source.footer.y)} w={inch(source.footer.w)} h={0} line={{ color: "CBD5E1", width: 1.2 }} />
+            <TextBox box={{ x: source.footer.x, y: source.footer.y + 18, w: 310, h: 22 }} fontSize={11.25} bold color={C.navy}>结构词汇</TextBox>
+            <TextBox box={{ x: source.footer.x, y: source.footer.y + 48, w: 310, h: 42 }} fontSize={9.4} color="475569">Query：发起检索 · Key：提供匹配索引 · Value：提供被读取的信息 · Head：一个并行关系视角</TextBox>
+            <Line x={inch(source.footer.x + 335)} y={inch(source.footer.y + 16)} w={0} h={inch(80)} line={{ color: "CBD5E1", width: 0.8 }} />
+            <TextBox box={{ x: source.footer.x + 360, y: source.footer.y + 18, w: 600, h: 22 }} fontSize={11.25} bold color={C.navy}>直觉</TextBox>
+            <TextBox box={{ x: source.footer.x + 360, y: source.footer.y + 48, w: 590, h: 42 }} fontSize={9.4} color="475569">Attention 是可微分的检索机制：每个 token 先找到相关 token，再从这些位置读取信息，形成上下文化表示。</TextBox>
+            <Line x={inch(source.footer.x + 1000)} y={inch(source.footer.y + 16)} w={0} h={inch(80)} line={{ color: "CBD5E1", width: 0.8 }} />
+            <TextBox box={{ x: source.footer.x + 1030, y: source.footer.y + 18, w: 400, h: 22 }} fontSize={11.25} bold color={C.navy}>稳定性</TextBox>
+            <TextBox box={{ x: source.footer.x + 1030, y: source.footer.y + 48, w: 400, h: 42 }} fontSize={9.4} color="475569">缩放避免分数过大，mask 控制可见范围，残差和 LayerNorm 保持深层网络的训练稳定。</TextBox>
+            <TextBox box={{ x: 40, y: 872, w: 960, h: 14 }} fontSize={6.5} color="64748B">Generated from source HTML constants: px/120 layout, SVG viewBox primitive mapping, editable CustomGeometry marker path, and native chart data.</TextBox>
           </Slide>
         </Deck>
       );

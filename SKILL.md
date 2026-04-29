@@ -1,18 +1,18 @@
 ---
 name: html-to-pptx-jsx
-description: Create downloadable PowerPoint decks from HTML pages, browser-rendered UI, screenshots, or page descriptions by writing inline browser JSX with @artifact-kit/pptxgenjs-jsx. Use when an agent needs to convert or recreate HTML/web content as PPTX slides, especially from a local HTML file, generated web page, dashboard, report, landing page, or multi-section document, without using DOM measurement or canvas rendering.
+description: Create downloadable PowerPoint decks from HTML pages, browser-rendered UI, screenshots, or page descriptions by writing inline browser JSX with @artifact-kit/pptxgenjs-jsx. Use when an agent needs to convert or recreate HTML/web content as editable PPTX slides, especially from a local HTML file, generated web page, dashboard, report, landing page, SVG-heavy slide, or multi-section document.
 ---
 
 # HTML to PPTX JSX
 
-Use `@artifact-kit/pptxgenjs-jsx` to recreate a page as a declarative PPTX tree inside browser-run HTML. First version rule: do not measure the DOM and do not render HTML/canvas into slides. Understand each page or section, then author one JSX `<Slide>` per intended slide and download the PPTX.
+Use `@artifact-kit/pptxgenjs-jsx` to recreate a page as a declarative PPTX tree inside browser-run HTML. First version rule: do not screenshot the page and do not rasterize HTML/canvas into slides by default. Understand each page or section, then author one JSX `<Slide>` per intended slide and download the PPTX.
 
 ## Core Workflow
 
-1. Inspect the source HTML/page enough to understand the content hierarchy, visual grouping, chart/table meaning, and intended slide boundaries.
+1. Inspect the source HTML/page enough to understand the content hierarchy, visual grouping, chart/table meaning, SVG primitives, and intended slide boundaries.
 2. Create or edit a local HTML file that loads the `@artifact-kit/pptxgenjs-jsx` browser IIFE before Babel Standalone.
 3. In an inline `<script type="text/babel" data-type="module" data-presets="typescript,react">`, use Babel classic JSX with `/** @jsx pptxElement */` and read `pptxElement` from `window.ArtifactKitPptxGenJsx`.
-4. Build a `<Deck>` with explicit `<Slide>` children. Recreate text, shapes, images, tables, and charts with package components.
+4. Build a `<Deck>` with explicit `<Slide>` children. Recreate text, shapes, SVG primitives, images, tables, and charts with package components.
 5. Add a download button that calls `validateDeck(deck)` and then `renderPptx(deck, { fileName })`.
 6. Serve the HTML over HTTP, open it in a browser, check console errors, then trigger the download.
 
@@ -22,10 +22,14 @@ Start from [assets/browser-inline-jsx-template.html](assets/browser-inline-jsx-t
 
 - Prefer semantic PPT objects over screenshots: `Text`, `TextRun`, shape components, `Table`, `Image`, and chart components.
 - Use one component per PptxGenJS concept; do not call imperative `slide.addText`, `slide.addShape`, or `slide.addChart` unless using the package escape hatch for unsupported behavior.
-- Use fixed slide units in inches. Default to wide layout `{ name: "WIDE", width: 13.333, height: 7.5 }`.
+- Use fixed slide units in inches. For 1600x900 slide-like HTML, use `const PX_PER_IN = 120` and derive `width = 1600 / 120`, `height = 900 / 120`.
 - Keep all slide positions explicit: every visible element should have `x`, `y`, `w`, and `h` unless the component docs say otherwise.
+- Do not place elements by hand feel. Derive coordinates from source HTML attributes, SVG viewBox values, Tailwind arbitrary classes, or DOM/CSS dimensions, and keep the arithmetic visible in the generated JS.
+- For SVG, map simple primitives to editable PPT objects: `rect` -> `Rect`/`RoundRect`, `line/path M-L` -> `Line`, `text` -> `Text`, `circle/ellipse` -> `Ellipse`, and non-trivial `path` -> `CustomGeometry`.
+- For charts, prefer native editable PPT charts. Recreate data, chart box, label sizes, legend position, and color series from the HTML/SVG source; exact SVG polyline pixel identity is less important than editability.
+- Structure code like React: split top-down into page/section components, implement reusable small components bottom-up, then compose slides.
 - Use browser inline JSX only for local authoring or agent workflows. For shipped web apps, precompile with Vite or another build tool.
-- Pin the CDN package version once a deck generation workflow matters for reproducibility.
+- Skill examples should use the unversioned CDN URL, or at most a major-version URL if the CDN supports it, so wrapper bugfixes are picked up. Pin an exact package version only for archived deliverables or production workflows after testing.
 
 ## Documentation Lookup
 

@@ -11,6 +11,7 @@ This is the default context agents should read before writing code with `@artifa
 5. Use hex colors without `#`.
 6. Run `validateDeck(deck)` before `renderPptx(deck)`.
 7. Use `Shape`, `Chart`, or `Raw` as escape hatches when dedicated components do not cover an upstream feature.
+8. When recreating HTML/SVG, derive inches from source dimensions with explicit formulas such as `const inch = (px) => px / 120`; do not invent approximate coordinates.
 
 ## Common Components
 

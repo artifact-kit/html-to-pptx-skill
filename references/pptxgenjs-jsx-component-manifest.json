@@ -122,6 +122,18 @@
       "propsInterface": "PieShapeProps"
     },
     {
+      "name": "CustomGeometry",
+      "category": "shape",
+      "mapsTo": "slide.addShape('custGeom')",
+      "useWhen": "Editable custom path geometry, especially SVG path primitives converted to PowerPoint points.",
+      "propsInterface": "CustomGeometryProps",
+      "notes": [
+        "Use for SVG path commands when native PowerPoint shapes are not enough.",
+        "Map SVG M/L/C/Q/Z commands into points. Keep point coordinates local to the geometry box.",
+        "Use slide x/y/w/h for the path bounding box position and size."
+      ]
+    },
+    {
       "name": "Triangle",
       "category": "shape",
       "mapsTo": "slide.addShape('triangle')",
