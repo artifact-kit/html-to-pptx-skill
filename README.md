@@ -32,9 +32,11 @@ For other agent runtimes, install the folder wherever that runtime loads `SKILL.
 Generated HTML examples use the published browser IIFE build before Babel. This keeps load order deterministic for local inline JSX:
 
 ```html
-<script src="https://unpkg.com/@artifact-kit/pptxgenjs-jsx@0.1.0/dist/pptxgenjs-jsx.browser.iife.js"></script>
+<script src="https://unpkg.com/@artifact-kit/pptxgenjs-jsx/dist/pptxgenjs-jsx.browser.iife.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 ```
+
+The examples intentionally do not pin a patch version, so wrapper bugfixes reach skill users through the CDN. For archived or production workflows, pin a tested package version after validation.
 
 Inside the inline Babel module, use classic JSX and read components from the global:
 

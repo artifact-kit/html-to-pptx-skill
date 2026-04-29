@@ -45,9 +45,11 @@ Do not chase pixel-perfect HTML layout. Aim for a clean PowerPoint-native recons
 For local inline JSX, load the browser IIFE before Babel so the runtime is ready before Babel executes transformed JSX:
 
 ```html
-<script src="https://unpkg.com/@artifact-kit/pptxgenjs-jsx@0.1.0/dist/pptxgenjs-jsx.browser.iife.js"></script>
+<script src="https://unpkg.com/@artifact-kit/pptxgenjs-jsx/dist/pptxgenjs-jsx.browser.iife.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 ```
+
+Use the unversioned CDN URL in skill examples so bugfixes in the wrapper become available automatically. Pin an exact package version only for archived deliverables or production workflows after testing.
 
 Inside the Babel script, use classic runtime:
 
