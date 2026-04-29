@@ -30,6 +30,13 @@
         padding: 12px 16px;
       }
 
+      [data-ak-slide] {
+        position: relative;
+        width: 1600px;
+        height: 900px;
+        background: #ffffff;
+      }
+
       pre {
         overflow: auto;
         border: 1px solid #e5e7eb;
@@ -42,9 +49,9 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   </head>
   <body>
-    <main>
-      <h1>HTML to PPTX JSX</h1>
-      <button id="download">Download PPTX</button>
+    <main data-ak-slide="slide" data-ak-width="1600" data-ak-height="900" data-ak-px-per-in="120">
+      <h1 data-ak-measure="title">HTML to PPTX JSX</h1>
+      <button id="download" type="button">Download PPTX</button>
       <pre id="status">Ready</pre>
     </main>
 
@@ -52,31 +59,32 @@
       /** @jsx pptxElement */
       const {
         Deck,
-        RoundRect,
         Slide,
         Text,
+        measureArtifacts,
         pptxElement,
+        readFontPt,
+        readPptBox,
+        readSlideLayout,
         renderPptx,
         validateDeck,
       } = window.ArtifactKitPptxGenJsx;
 
       const status = document.querySelector("#status");
 
-      const deck = (
-        <Deck title="Generated deck" author="artifact-kit" layout={{ name: "WIDE", width: 13.333, height: 7.5 }}>
-          <Slide background={{ color: "FFFFFF" }}>
-            <RoundRect x={0.65} y={0.55} w={12.0} h={6.4} rectRadius={0.08} fill={{ color: "F8FAFC" }} line={{ color: "E5E7EB", width: 1 }} />
-            <Text x={0.95} y={0.9} w={8.2} h={0.55} fontSize={28} bold color="111827" margin={0}>
-              Replace this slide with semantic PPTX JSX
-            </Text>
-            <Text x={0.95} y={1.65} w={8.8} h={0.45} fontSize={15} color="374151" margin={0}>
-              Inspect the source HTML, decide slide boundaries, then author Deck and Slide nodes directly.
-            </Text>
-          </Slide>
-        </Deck>
-      );
-
       document.querySelector("#download").addEventListener("click", async () => {
+        await measureArtifacts({ document });
+
+        const deck = (
+          <Deck title="Generated deck" author="artifact-kit" layout={readSlideLayout("slide")}>
+            <Slide background={{ color: "FFFFFF" }}>
+              <Text {...readPptBox("title")} fontSize={readFontPt("title")} bold color="111827" margin={0}>
+                {document.querySelector('[data-ak-measure="title"]').textContent.trim()}
+              </Text>
+            </Slide>
+          </Deck>
+        );
+
         const issues = validateDeck(deck);
         if (issues.some((issue) => issue.level === "error")) {
           status.textContent = JSON.stringify(issues, null, 2);

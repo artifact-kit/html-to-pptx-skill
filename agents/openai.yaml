@@ -1,4 +1,4 @@
 interface:
   display_name: "HTML to PPTX JSX"
-  short_description: "Create PPTX files from HTML using JSX"
-  default_prompt: "Use $html-to-pptx-jsx to turn this HTML page into a downloadable PPTX."
+  short_description: "Create editable PPTX files from measured HTML"
+  default_prompt: "Use $html-to-pptx-jsx to copy this HTML into a measured exporter and generate a downloadable, editable PPTX."

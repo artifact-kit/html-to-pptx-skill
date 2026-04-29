@@ -11,6 +11,7 @@ Load on demand:
 - docs/reference/common-props.md for normal slides, text, image, table, media, deck, and write options.
 - docs/reference/shape-props.md when using Shape or uncommon shapes.
 - docs/reference/chart-props.md when using charts.
+- docs/measure-contract.md when recreating rendered HTML and reading exact DOM-derived x/y/w/h values.
 - docs/reference/all-upstream-props.md only when common/chart/shape docs are insufficient.
 
 Generation rule:

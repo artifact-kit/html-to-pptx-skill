@@ -1,73 +1,97 @@
 ---
 name: html-to-pptx-jsx
-description: Create downloadable PowerPoint decks from HTML pages, browser-rendered UI, screenshots, or page descriptions by writing inline browser JSX with @artifact-kit/pptxgenjs-jsx. Use when an agent needs to convert or recreate HTML/web content as editable PPTX slides, especially from a local HTML file, generated web page, dashboard, report, landing page, SVG-heavy slide, or multi-section document.
+description: Create downloadable, editable PowerPoint decks from HTML pages by copying the source into an exporter page, marking measured DOM nodes, and writing inline browser JSX with @artifact-kit/pptxgenjs-jsx. Use for local HTML files, generated web pages, dashboards, reports, slide-like Tailwind pages, SVG-heavy pages, or any workflow that needs HTML-to-PPTX reconstruction with DOM measurement rather than guessed coordinates.
 ---
 
 # HTML to PPTX JSX
 
-Use `@artifact-kit/pptxgenjs-jsx` to recreate a page as a declarative PPTX tree inside browser-run HTML. First version rule: do not screenshot the page and do not rasterize HTML/canvas into slides by default. Understand each page or section, then author one JSX `<Slide>` per intended slide and download the PPTX.
+Use `@artifact-kit/pptxgenjs-jsx` to turn rendered HTML into an editable PowerPoint deck. The default workflow is measure-first: preserve the original input, create a separate exporter HTML, mark the exporter DOM with `data-ak-*` measurement attributes, then build a JSX `<Deck>` from measured boxes and source SVG primitives.
 
 ## Core Workflow
 
-1. Inspect the source HTML/page enough to understand the content hierarchy, visual grouping, chart/table meaning, SVG primitives, and intended slide boundaries.
-2. Create or edit a local HTML file that loads the `@artifact-kit/pptxgenjs-jsx` browser IIFE before Babel Standalone.
-3. In an inline `<script type="text/babel" data-type="module" data-presets="typescript,react">`, use Babel classic JSX with `/** @jsx pptxElement */` and read `pptxElement` from `window.ArtifactKitPptxGenJsx`.
-4. Build a `<Deck>` with explicit `<Slide>` children. Recreate text, shapes, SVG primitives, images, tables, and charts with package components.
-5. Add a download button that calls `validateDeck(deck)` and then `renderPptx(deck, { fileName })`.
-6. Serve the HTML over HTTP, open it in a browser, check console errors, then trigger the download.
+1. Treat the original input HTML as read-only. Do not add `data-ak-*`, buttons, scripts, or generated code to it.
+2. Copy the input into a generated exporter HTML. Add the export button, `@artifact-kit/pptxgenjs-jsx` browser IIFE, Babel Standalone, and measurement markers only to the exporter.
+3. Mark the slide root with `data-ak-slide`, `data-ak-width`, `data-ak-height`, and `data-ak-px-per-in`.
+4. Mark every DOM block, text node, SVG, chart region, footer item, and repeated card that will become PPT content with `data-ak-measure="stable-id"`.
+5. In the export button handler, call `await measureArtifacts({ document })`, then read positions with `readPptBox(id)`, `readFontPt(id)`, and `readSlideLayout(id)`.
+6. Author a JSX `<Deck>` using native PPT objects. Use `Text`, `TextRun`, shape components, `LineBetween`, `CustomGeometry`, tables, images, and native chart components.
+7. Run `validateDeck(deck)`, call `renderPptx(deck, { fileName })`, open the downloaded deck, and visually compare it against the exporter page.
 
-Start from [assets/browser-inline-jsx-template.html](assets/browser-inline-jsx-template.html) when making a standalone local HTML tool.
+Start from [assets/browser-inline-jsx-template.html](assets/browser-inline-jsx-template.html) when creating a fresh exporter.
 
-## Authoring Rules
+## Non-Negotiable Rules
 
-- Prefer semantic PPT objects over screenshots: `Text`, `TextRun`, shape components, `Table`, `Image`, and chart components.
-- Use one component per PptxGenJS concept; do not call imperative `slide.addText`, `slide.addShape`, or `slide.addChart` unless using the package escape hatch for unsupported behavior.
-- Use fixed slide units in inches. For 1600x900 slide-like HTML, use `const PX_PER_IN = 120` and derive `width = 1600 / 120`, `height = 900 / 120`.
-- Keep all slide positions explicit: every visible element should have `x`, `y`, `w`, and `h` unless the component docs say otherwise.
-- Do not place elements by hand feel. Derive coordinates from source HTML attributes, SVG viewBox values, Tailwind arbitrary classes, or DOM/CSS dimensions, and keep the arithmetic visible in the generated JS.
-- For SVG, map simple primitives to editable PPT objects: `rect` -> `Rect`/`RoundRect`, `line/path M-L` -> `Line`, `text` -> `Text`, `circle/ellipse` -> `Ellipse`, and non-trivial `path` -> `CustomGeometry`.
-- For charts, prefer native editable PPT charts. Recreate data, chart box, label sizes, legend position, and color series from the HTML/SVG source; exact SVG polyline pixel identity is less important than editability.
-- Structure code like React: split top-down into page/section components, implement reusable small components bottom-up, then compose slides.
-- Use browser inline JSX only for local authoring or agent workflows. For shipped web apps, precompile with Vite or another build tool.
-- Skill examples should use the unversioned CDN URL, or at most a major-version URL if the CDN supports it, so wrapper bugfixes are picked up. Pin an exact package version only for archived deliverables or production workflows after testing.
+- Never place DOM-derived elements by visual guesswork.
+- If an element is rendered DOM, measure it with `data-ak-measure` and `readPptBox`.
+- If an element is inside SVG, map it from the SVG source `viewBox` and primitive coordinates.
+- If neither DOM measurement nor source geometry is available, explicitly choose an image/snapdom fallback and document why editability is not practical.
+- Keep arithmetic visible in generated JS. Agents should be able to audit why every coordinate exists.
+- Prefer native editable PPT objects over screenshots. Use raster fallback only for details that cannot be represented editably.
+- Use browser inline JSX only for local authoring or agent workflows. For shipped apps, precompile with Vite or another build tool.
+- Skill examples should use the unversioned CDN URL, or at most a major-version URL if the CDN supports it, so wrapper bugfixes are picked up. Pin exact versions only for archived deliverables after testing.
 
-## Documentation Lookup
+## What To Read
 
-When exact components or props matter, read the vendored package docs in this skill in this order:
+Always read:
 
-1. [references/pptxgenjs-jsx-llms.txt](references/pptxgenjs-jsx-llms.txt)
-2. [references/pptxgenjs-jsx-quickstart.md](references/pptxgenjs-jsx-quickstart.md)
-3. [references/pptxgenjs-jsx-component-selection.md](references/pptxgenjs-jsx-component-selection.md)
-4. [references/pptxgenjs-jsx-common-props.md](references/pptxgenjs-jsx-common-props.md)
-5. Shape-heavy decks: [references/pptxgenjs-jsx-shape-props.md](references/pptxgenjs-jsx-shape-props.md)
-6. Chart-heavy decks: [references/pptxgenjs-jsx-chart-props.md](references/pptxgenjs-jsx-chart-props.md)
-7. Full upstream surface: [references/pptxgenjs-jsx-all-upstream-props.md](references/pptxgenjs-jsx-all-upstream-props.md)
-8. Machine-readable component list: [references/pptxgenjs-jsx-component-manifest.json](references/pptxgenjs-jsx-component-manifest.json)
+1. [references/measure-first-workflow.md](references/measure-first-workflow.md)
+2. [references/coordinate-policy.md](references/coordinate-policy.md)
+3. [references/pptxgenjs-jsx-llms.txt](references/pptxgenjs-jsx-llms.txt)
+4. [references/pptxgenjs-jsx-quickstart.md](references/pptxgenjs-jsx-quickstart.md)
 
-If `node_modules/@artifact-kit/pptxgenjs-jsx` exists and may be newer than this skill, prefer its `llms.txt`, `docs/`, and `component-manifest.json` files after reading the skill workflow.
+Read when needed:
+
+- SVG-heavy pages: [references/svg-viewbox-mapping.md](references/svg-viewbox-mapping.md)
+- Final checks: [references/audit-checklist.md](references/audit-checklist.md)
+- Broader heuristics: [references/html-recreation-guide.md](references/html-recreation-guide.md)
+- Wrapper measure API details: [references/pptxgenjs-jsx-measure-contract.md](references/pptxgenjs-jsx-measure-contract.md)
+- Component choice: [references/pptxgenjs-jsx-component-selection.md](references/pptxgenjs-jsx-component-selection.md)
+- Common props: [references/pptxgenjs-jsx-common-props.md](references/pptxgenjs-jsx-common-props.md)
+- Shape props: [references/pptxgenjs-jsx-shape-props.md](references/pptxgenjs-jsx-shape-props.md)
+- Chart props: [references/pptxgenjs-jsx-chart-props.md](references/pptxgenjs-jsx-chart-props.md)
+- Full upstream surface: [references/pptxgenjs-jsx-all-upstream-props.md](references/pptxgenjs-jsx-all-upstream-props.md)
+- Machine-readable component list: [references/pptxgenjs-jsx-component-manifest.json](references/pptxgenjs-jsx-component-manifest.json)
+
+If `node_modules/@artifact-kit/pptxgenjs-jsx` exists and may be newer than this skill, prefer its `llms.txt`, `docs/`, and `component-manifest.json` after reading this workflow.
 
 ## Browser Inline JSX Pattern
 
-Use this pattern, not `@jsxImportSource`, inside Babel Standalone:
+Use classic JSX with Babel Standalone:
 
 ```tsx
 /** @jsx pptxElement */
-const { Deck, Slide, Text, pptxElement, validateDeck, renderPptx } = window.ArtifactKitPptxGenJsx;
+const {
+  Deck,
+  Slide,
+  Text,
+  measureArtifacts,
+  pptxElement,
+  readFontPt,
+  readPptBox,
+  readSlideLayout,
+  renderPptx,
+  validateDeck,
+} = window.ArtifactKitPptxGenJsx;
 
-const deck = (
-  <Deck title="Generated deck" layout={{ name: "WIDE", width: 13.333, height: 7.5 }}>
-    <Slide background={{ color: "FFFFFF" }}>
-      <Text x={0.7} y={0.6} w={6} h={0.5} fontSize={24} bold color="111827" margin={0}>
-        Slide title
-      </Text>
-    </Slide>
-  </Deck>
-);
+document.querySelector("#export").addEventListener("click", async () => {
+  await measureArtifacts({ document });
 
-const issues = validateDeck(deck);
-if (!issues.some((issue) => issue.level === "error")) {
-  await renderPptx(deck, { fileName: "deck.pptx" });
-}
+  const layout = readSlideLayout("slide");
+  const title = readPptBox("title");
+  const deck = (
+    <Deck title="Measured deck" layout={layout}>
+      <Slide background={{ color: "FFFFFF" }}>
+        <Text {...title} fontSize={readFontPt("title")} bold margin={0}>
+          {document.querySelector('[data-ak-measure="title"]').textContent.trim()}
+        </Text>
+      </Slide>
+    </Deck>
+  );
+
+  const issues = validateDeck(deck);
+  if (issues.some((issue) => issue.level === "error")) throw new Error(JSON.stringify(issues, null, 2));
+  await renderPptx(deck, { fileName: "measured-deck.pptx" });
+});
 ```
 
-For a fuller checklist and conversion heuristics, read [references/html-recreation-guide.md](references/html-recreation-guide.md).
+Do not use `@jsxImportSource` in inline Babel unless the React preset is explicitly configured for automatic runtime. The default is `/** @jsx pptxElement */`.
