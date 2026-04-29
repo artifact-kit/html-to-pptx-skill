@@ -53,12 +53,12 @@ Inside the Babel script, use classic runtime:
 
 ```html
 <script type="text/babel" data-type="module" data-presets="typescript,react">
-  /** @jsx h */
-  const { Deck, Slide, Text, h, validateDeck, renderPptx } = window.ArtifactKitPptxGenJsx;
+  /** @jsx pptxElement */
+  const { Deck, Slide, Text, pptxElement, validateDeck, renderPptx } = window.ArtifactKitPptxGenJsx;
 </script>
 ```
 
-Do not use `/** @jsxImportSource @artifact-kit/pptxgenjs-jsx */` with Babel Standalone unless the React preset is explicitly configured for automatic runtime. The classic `h` pattern is the default for this skill.
+Do not use `/** @jsxImportSource @artifact-kit/pptxgenjs-jsx */` with Babel Standalone unless the React preset is explicitly configured for automatic runtime. The classic `pptxElement` pattern is the default for this skill because it avoids shadowing PptxGenJS `h` height props.
 
 ## Validation Checklist
 
@@ -71,8 +71,8 @@ Do not use `/** @jsxImportSource @artifact-kit/pptxgenjs-jsx */` with Babel Stan
 
 ## Common Failures
 
-- `importSource cannot be set when runtime is classic`: replace `@jsxImportSource` with `/** @jsx h */` and import `h`.
-- `h is not a function`: load `pptxgenjs-jsx.browser.iife.js` before Babel and read `h` from `window.ArtifactKitPptxGenJsx`.
+- `importSource cannot be set when runtime is classic`: replace `@jsxImportSource` with `/** @jsx pptxElement */` and use `pptxElement`.
+- `pptxElement is not a function`: load `pptxgenjs-jsx.browser.iife.js` before Babel and read `pptxElement` from `window.ArtifactKitPptxGenJsx`.
 - `Failed to resolve module specifier`: use the IIFE pattern above, or add/fix the import map entry for `@artifact-kit/pptxgenjs-jsx` if intentionally using ESM.
 - Blank downloaded deck: ensure the `deck` variable is a `<Deck>` node with `<Slide>` children.
 - Missing browser download: ensure the click handler is async and awaits `renderPptx`.

@@ -53,16 +53,16 @@ await renderPptx(deck, { fileName: "example.pptx" });
 
 ## Browser JSX With Babel Standalone
 
-For local workflows, HTML can import Babel Standalone and write JSX directly. Use Babel's classic JSX runtime with `/** @jsx h */`, then import `h` from this package. See `examples/browser-jsx.html`.
+For local workflows, HTML can import Babel Standalone and write JSX directly. Use Babel's classic JSX runtime with `/** @jsx pptxElement */`, then import `pptxElement` from this package. Do not use `h` as the JSX factory in deck code because PptxGenJS uses `h` for height props and local helper parameters often shadow it. See `examples/browser-jsx.html`.
 
 ## No JSX Transform
 
 ```ts
-import { Deck, Slide, Text, h, renderPptx } from "@artifact-kit/pptxgenjs-jsx";
+import { Deck, Slide, Text, pptxElement, renderPptx } from "@artifact-kit/pptxgenjs-jsx";
 
-const deck = h(Deck, { title: "No JSX" },
-  h(Slide, { background: { color: "FFFFFF" } },
-    h(Text, { text: "Hello", x: 1, y: 1, w: 4, h: 0.5 })
+const deck = pptxElement(Deck, { title: "No JSX" },
+  pptxElement(Slide, { background: { color: "FFFFFF" } },
+    pptxElement(Text, { text: "Hello", x: 1, y: 1, w: 4, h: 0.5 })
   )
 );
 

@@ -39,8 +39,8 @@ Generated HTML examples use the published browser IIFE build before Babel. This 
 Inside the inline Babel module, use classic JSX and read components from the global:
 
 ```tsx
-/** @jsx h */
-const { Deck, Slide, Text, h, renderPptx, validateDeck } = window.ArtifactKitPptxGenJsx;
+/** @jsx pptxElement */
+const { Deck, Slide, Text, pptxElement, renderPptx, validateDeck } = window.ArtifactKitPptxGenJsx;
 ```
 
 ## Example

@@ -11,7 +11,7 @@ Use `@artifact-kit/pptxgenjs-jsx` to recreate a page as a declarative PPTX tree 
 
 1. Inspect the source HTML/page enough to understand the content hierarchy, visual grouping, chart/table meaning, and intended slide boundaries.
 2. Create or edit a local HTML file that loads the `@artifact-kit/pptxgenjs-jsx` browser IIFE before Babel Standalone.
-3. In an inline `<script type="text/babel" data-type="module" data-presets="typescript,react">`, use Babel classic JSX with `/** @jsx h */` and read `h` from `window.ArtifactKitPptxGenJsx`.
+3. In an inline `<script type="text/babel" data-type="module" data-presets="typescript,react">`, use Babel classic JSX with `/** @jsx pptxElement */` and read `pptxElement` from `window.ArtifactKitPptxGenJsx`.
 4. Build a `<Deck>` with explicit `<Slide>` children. Recreate text, shapes, images, tables, and charts with package components.
 5. Add a download button that calls `validateDeck(deck)` and then `renderPptx(deck, { fileName })`.
 6. Serve the HTML over HTTP, open it in a browser, check console errors, then trigger the download.
@@ -47,8 +47,8 @@ If `node_modules/@artifact-kit/pptxgenjs-jsx` exists and may be newer than this 
 Use this pattern, not `@jsxImportSource`, inside Babel Standalone:
 
 ```tsx
-/** @jsx h */
-const { Deck, Slide, Text, h, validateDeck, renderPptx } = window.ArtifactKitPptxGenJsx;
+/** @jsx pptxElement */
+const { Deck, Slide, Text, pptxElement, validateDeck, renderPptx } = window.ArtifactKitPptxGenJsx;
 
 const deck = (
   <Deck title="Generated deck" layout={{ name: "WIDE", width: 13.333, height: 7.5 }}>
