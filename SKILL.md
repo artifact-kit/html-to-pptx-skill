@@ -7,25 +7,41 @@ description: Create downloadable, editable PowerPoint decks from HTML pages by c
 
 Use `@artifact-kit/pptxgenjs-jsx` to turn rendered HTML into an editable PowerPoint deck. The default workflow is measure-first: preserve the original input, create a separate exporter HTML, mark the exporter DOM with `data-ak-*` measurement attributes, then build a JSX `<Deck>` from measured boxes and source SVG primitives.
 
+## Required Stage Gates
+
+Do not jump directly from input HTML to a finished exporter. Before writing the final `output.html` or exporter code, produce these intermediate artifacts in your working notes, response, or as a top-of-file comment in the generated exporter:
+
+1. **File plan**: input path, exporter path, confirmation that the input remains read-only.
+2. **Slide decomposition**: component tree from large to small, such as `Deck -> Slide -> Header -> MainGrid -> Panel -> Diagram`.
+3. **Measurement manifest**: every required `data-ak-measure` id, the DOM selector it marks, and why the PPT needs its box.
+4. **SVG inventory**: every source `<svg>`, its `viewBox`, important primitives (`rect`, `line`, `path`, `circle`, `text`, chart marks), and a mapping decision for each group.
+5. **Fallback list**: any raster/image fallback with a specific reason. Empty is preferred.
+
+If any SVG has readable primitives, do not embed that SVG as a PNG. Map its primitives into editable PPT shapes unless the fallback list documents why native reconstruction is impossible.
+
 ## Core Workflow
 
 1. Treat the original input HTML as read-only. Do not add `data-ak-*`, buttons, scripts, or generated code to it.
 2. Copy the input into a generated exporter HTML. Add the export button, `@artifact-kit/pptxgenjs-jsx` browser IIFE, Babel Standalone, and measurement markers only to the exporter.
-3. Mark the slide root with `data-ak-slide`, `data-ak-width`, `data-ak-height`, and `data-ak-px-per-in`.
-4. Mark every DOM block, text node, SVG, chart region, footer item, and repeated card that will become PPT content with `data-ak-measure="stable-id"`.
-5. In the export button handler, call `await measureArtifacts({ document })`, then read positions with `readPptBox(id)`, `readFontPt(id)`, and `readSlideLayout(id)`.
-6. Author a JSX `<Deck>` using native PPT objects. Use `Text`, `TextRun`, shape components, `LineBetween`, `CustomGeometry`, tables, images, and native chart components.
-7. Run `validateDeck(deck)`, call `renderPptx(deck, { fileName })`, open the downloaded deck, and visually compare it against the exporter page.
+3. Complete the required stage gates above. Do not continue until the decomposition, measurement manifest, and SVG inventory exist.
+4. Mark the slide root with `data-ak-slide`, `data-ak-width`, `data-ak-height`, and `data-ak-px-per-in`.
+5. Mark every DOM block, text node, SVG, chart region, footer item, and repeated card that will become PPT content with `data-ak-measure="stable-id"`.
+6. In the export button handler, call `await measureArtifacts({ document })`, then read positions with `readPptBox(id)`, `readFontPt(id)`, and `readSlideLayout(id)`.
+7. Author a componentized JSX `<Deck>` using native PPT objects. Use `Text`, `TextRun`, shape components, `LineBetween`, `CustomGeometry`, tables, images, and native chart components.
+8. Run `validateDeck(deck)`, call `renderPptx(deck, { fileName })`, open the downloaded deck, and visually compare it against the exporter page.
 
 Start from [assets/browser-inline-jsx-template.html](assets/browser-inline-jsx-template.html) when creating a fresh exporter.
 
 ## Non-Negotiable Rules
 
 - Never place DOM-derived elements by visual guesswork.
+- Never create only a final `output.html` without first creating or embedding the stage-gate artifacts.
 - If an element is rendered DOM, measure it with `data-ak-measure` and `readPptBox`.
 - If an element is inside SVG, map it from the SVG source `viewBox` and primitive coordinates.
 - If neither DOM measurement nor source geometry is available, explicitly choose an image/snapdom fallback and document why editability is not practical.
+- Do not rasterize SVGs just because native mapping takes more work.
 - Keep arithmetic visible in generated JS. Agents should be able to audit why every coordinate exists.
+- Split the generated JSX into named components. Avoid one monolithic slide function.
 - Prefer native editable PPT objects over screenshots. Use raster fallback only for details that cannot be represented editably.
 - Use browser inline JSX only for local authoring or agent workflows. For shipped apps, precompile with Vite or another build tool.
 - Skill examples should use the unversioned CDN URL, or at most a major-version URL if the CDN supports it, so wrapper bugfixes are picked up. Pin exact versions only for archived deliverables after testing.
@@ -36,8 +52,9 @@ Always read:
 
 1. [references/measure-first-workflow.md](references/measure-first-workflow.md)
 2. [references/coordinate-policy.md](references/coordinate-policy.md)
-3. [references/pptxgenjs-jsx-llms.txt](references/pptxgenjs-jsx-llms.txt)
-4. [references/pptxgenjs-jsx-quickstart.md](references/pptxgenjs-jsx-quickstart.md)
+3. [references/one-shot-agent-contract.md](references/one-shot-agent-contract.md)
+4. [references/pptxgenjs-jsx-llms.txt](references/pptxgenjs-jsx-llms.txt)
+5. [references/pptxgenjs-jsx-quickstart.md](references/pptxgenjs-jsx-quickstart.md)
 
 Read when needed:
 

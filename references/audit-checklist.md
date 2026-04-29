@@ -2,6 +2,14 @@
 
 Run this checklist before handing off an HTML-to-PPTX exporter.
 
+## Stage Gates
+
+- The work includes a file plan naming the clean input and generated exporter.
+- The work includes a component tree. A single monolithic slide function is not acceptable for complex pages.
+- The work includes a measurement manifest with ids, selectors, kinds, and reasons.
+- The work includes an SVG inventory for every source SVG.
+- The work includes a raster fallback list. Empty is fine; undocumented image fallback is not.
+
 ## Source Hygiene
 
 - The original input HTML has no generated export button.
@@ -30,6 +38,8 @@ The exporter should mark:
 - Footer text blocks.
 
 Any DOM-derived PPT object without a marker is suspicious.
+
+If the exporter contains PPT text or shapes for a DOM block but the DOM block is absent from the manifest, add a marker and use `readPptBox`.
 
 ## Coordinate Audit
 
@@ -67,6 +77,14 @@ Open the downloaded deck in PowerPoint/WPS/Keynote/LibreOffice:
 - SVG arrows preserve direction.
 - Charts are native when data is available.
 - Any image fallback is intentional and documented in code.
+
+## One-Shot Failure Signs
+
+- The agent only created `output.html` and did not show or embed a component tree.
+- The exporter has measurement tags but no manifest explaining coverage.
+- SVGs were embedded as PNG/data URLs without an SVG inventory.
+- SVG text was recreated manually while boxes, arrows, or matrices were rasterized.
+- Many coordinates are bare numbers unrelated to measurement, viewBox math, or source CSS.
 
 ## Common Fixes
 

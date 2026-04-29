@@ -15,6 +15,15 @@ examples/generated/source-export.html   # measured exporter
 
 The exporter can be a copy of the input with an added toolbar, measurement markers, and inline JSX.
 
+Before writing the exporter, create a short plan with:
+
+- source and exporter paths;
+- component tree from large regions down to repeated primitives;
+- measurement manifest of every `data-ak-measure` id;
+- SVG inventory with viewBox, primitive groups, and native mapping decisions.
+
+For one-shot agents, use [one-shot-agent-contract.md](one-shot-agent-contract.md) and keep the plan as a comment at the top of the exporter if there is no separate planning artifact.
+
 ## 2. Load Runtime Before Babel
 
 ```html
@@ -50,6 +59,8 @@ Mark anything whose box will be reused:
 
 Mark both containers and children when both matter. A panel box, its title text, its SVG, and its caption should usually each have their own marker.
 
+The measurement manifest should be complete before adding markers. If a PPT object needs the position of a DOM element, that DOM element needs a stable id in the manifest.
+
 ## 4. Measure Inside The Click Handler
 
 Do not read measurement values at module parse time. The DOM, fonts, and layout may still be settling.
@@ -82,7 +93,7 @@ Use the measured values directly:
 />
 ```
 
-For SVG contents, measure the SVG element once, then map primitives from the SVG viewBox. See [svg-viewbox-mapping.md](svg-viewbox-mapping.md).
+For SVG contents, measure the SVG element once, then map primitives from the SVG viewBox. See [svg-viewbox-mapping.md](svg-viewbox-mapping.md). Do not convert SVGs to images until you have inspected the SVG source and documented why primitive mapping is not practical.
 
 ## 6. Validate And Download
 

@@ -112,8 +112,10 @@ The attention example is included as a concrete proof of the workflow:
 1. Read `SKILL.md`.
 2. Read `references/measure-first-workflow.md`.
 3. Read `references/coordinate-policy.md`.
-4. Load component docs only as needed.
-5. Before handoff, run through `references/audit-checklist.md`.
+4. Read `references/one-shot-agent-contract.md` before generating an exporter in one pass.
+5. Create the required stage-gate artifacts: file plan, component tree, measurement manifest, SVG inventory, and raster fallback list.
+6. Load component docs only as needed.
+7. Before handoff, run through `references/audit-checklist.md`.
 
 ## Design Positioning
 
